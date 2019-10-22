@@ -1,0 +1,58 @@
+export default function sketch(p){
+    let bg;
+    let data;
+    let canvas;
+    let players = [];
+
+    let show_voronoi = true;
+
+    p.preload = () => {
+        bg = p.loadImage("dist/6ce1c9bce4091f1e0a741dea7c4d2564.png");
+    };
+
+    p.setup = () => {
+        p.createCanvas(1360, 916);
+        canvas = true;
+
+        if(show_voronoi){
+            for (let i = 0; i < players.length; i++) {
+                p5.prototype.voronoiSite(players[i].x_pos, players[i].y_pos, 255);
+            }
+            p5.prototype.voronoi(1360, 916, false);
+            p5.prototype.voronoiSiteStroke(255);
+            p5.prototype.voronoiCellStroke(0);
+            p5.prototype.voronoiCellStrokeWeight(3);
+            p5.prototype.voronoiSiteStrokeWeight(4);
+        }
+    };
+
+    p.draw = () => {
+        if(bg){
+            p.background(bg);
+        }
+
+        if(players.length === 0){
+            return;
+        }
+
+        for(let i = 0; i < players.length; i++){
+            p.fill(players[i].fill);
+            p.ellipse(players[i].x_pos, players[i].y_pos, 20, 20);
+        }
+
+        if(show_voronoi) {
+            p.fill(0);
+            p.stroke(255);
+            p5.prototype.voronoi(1360, 916, false);
+            p5.prototype.voronoiDraw(0, 0, true, false);
+            p5.prototype.voronoiClearSites();
+        }
+    };
+
+    p.myCustomRedrawAccordingToNewPropsHandler = (newProps) => {
+        if(canvas){
+            data = JSON.parse(newProps.current_frame);
+            players = data.players;
+        }
+    };
+}
