@@ -116,6 +116,7 @@ canvas{
     width: calc(100% - 80px);
     bottom: 0;
     opacity: 0.5;
+    cursor: pointer;
 }
 
 .progress-indicator{

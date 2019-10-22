@@ -61,6 +61,10 @@ def calculate_distance(x1, y1, x2, y2):
     return dist
 
 
+def get_start_frame(period_no):
+    return meta_data.periods[str(period_no)]["start_frame"];
+
+
 def handle_teams(tag_id, x, y):
     if int(tag_id) in h_team:
         return 'H'

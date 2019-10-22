@@ -17,10 +17,11 @@ export default class P5Sketch extends Component {
     data;
     canvas;
     players = [];
+    playerObjects = [];
     ball;
-    show_voronoi = true;
+    show_voronoi = false;
     show_convex_hull = false;
-    show_convex_hull_h = true;
+    show_convex_hull_h = false;
     show_convex_hull_a = false;
 
     constructor(props){
@@ -75,6 +76,19 @@ export default class P5Sketch extends Component {
         this.canvas = p5.createCanvas(1360, 916).parent(canvasParentRef);
         this.bg = p5.loadImage("dist/6ce1c9bce4091f1e0a741dea7c4d2564.png");
     };
+
+    /*player = (x, y, team, id) => {
+        this.x = x;
+        this.y = y;
+        this.r = 20;
+        this.team = team;
+        this.id = id;
+
+        this.display = function(){
+            p5.stroke(255)
+            p5.ellipse(this.x, this.y, this.r, this.r);
+        }
+    };*/
 
     draw = p5 => {
         if(this.bg){
@@ -136,6 +150,8 @@ export default class P5Sketch extends Component {
             context.fill();
         }
     };
+
+
 
     render() {
         return (

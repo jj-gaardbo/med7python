@@ -14,7 +14,8 @@ export default class DataHandler extends React.Component {
             x: 0,
             percentage: 0,
             intervalID: 0,
-            timeout: 130,
+            timeout: 39,
+            skip_frames: 1,
             meta: null
         };    // This binding is necessary to make `this` work in the callback
 
@@ -39,7 +40,7 @@ export default class DataHandler extends React.Component {
             this.setState({data: data});
             this.props.callback(data);
         }).done(function() {
-            self.setState({frame: frame+5});
+            self.setState({frame: frame+self.state.skip_frames});
         });
     }
 
@@ -64,7 +65,7 @@ export default class DataHandler extends React.Component {
             this.setState({data: data});
             this.props.callback(data);
         }).done(function() {
-            self.setState({frame: frame+5});
+            self.setState({frame: frame+self.state.skip_frames});
         });
     }
 
