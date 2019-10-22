@@ -29,7 +29,7 @@ export default class DataHandler extends React.Component {
 
     _onMouseMove(e) {
         const elementWidth = progressBar.getBoundingClientRect().width;
-        this.setState({ x: e.screenX, percentage: e.screenX/elementWidth*100 });
+        this.setState({ x: e.screenX, percentage: (e.screenX-80)/elementWidth*100 });
     }
 
     getTimeFrame(){
@@ -68,20 +68,17 @@ export default class DataHandler extends React.Component {
         });
     }
 
-    componentWillMount(){
-        if(this.state.meta === null){
-            this.getPythonMetaData()
-        }
-    }
-
     getProgress(){
-        if(this.state.dataLength === 0){
+        if(this.state.dataLength === 0 && this.state.data !== ""){
             this.getPythonDataSize();
         }
         return this.state.frame / this.state.dataLength * 100;
     }
 
     play(){
+        if(this.state.meta === null){
+            this.getPythonMetaData()
+        }
         this.setState({paused:false})
         this.setState({intervalID: setInterval(this.getPythonData, this.state.timeout)})
     }
@@ -98,8 +95,12 @@ export default class DataHandler extends React.Component {
                 <div className="progress-bar" onClick={this.getTimeFrame} onMouseMove={this._onMouseMove.bind(this)} ref={(div) => {progressBar = div}}>
                     <div className="progress-indicator" style={{width: `${this.getProgress()}%`}}/>
                 </div>
-                <button onClick={this.play}>Play</button>
-                <button onClick={this.pause}>Pause</button>
+                <div className="button-outer" onClick={this.play}>
+                    <div className="play-button"></div>
+                </div>
+                <div className="button-outer" onClick={this.pause}>
+                    <div className="pause-button"></div>
+                </div>
             </div>
         )
     }

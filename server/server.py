@@ -9,13 +9,15 @@ import time
 from tqdm import tqdm
 from xml.dom import minidom
 from werkzeug.utils import secure_filename
-from flask import Flask, request, render_template, jsonify, flash, redirect, send_from_directory, url_for
+from flask import Flask, request, render_template, jsonify, flash, redirect, url_for
 
 UPLOAD_FOLDER = './uploads'
 ALLOWED_EXTENSIONS = {'dat', 'xml'}
 
 app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
-
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.secret_key = 'super secret key'
+app.config['SESSION_TYPE'] = 'filesystem'
 
 w = 1360
 h = 916
@@ -174,8 +176,10 @@ def check_file_type(filename):
     global data_file, meta_file
     if filename.rsplit('.', 1)[1].lower() == "xml":
         meta_file = UPLOAD_FOLDER+"/"+filename
+        return "xml"
     elif filename.rsplit('.', 1)[1].lower() == "dat":
         data_file = UPLOAD_FOLDER+"/"+filename
+        return "dat"
 
 
 @app.route("/data_length")
@@ -208,14 +212,16 @@ def upload_file():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        check_file_type(filename)
-        print(file.readlines())
+        if check_file_type(filename) == "xml":
+            handle_meta_data(filename)
+        else:
+            process_data(filename)
         return redirect(url_for('uploaded_file', filename=filename))
 
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return "OK"
+    return check_file_type(filename)
 
 
 @app.route("/")
@@ -227,37 +233,33 @@ def run_app():
     app.run()
 
 
-def handle_meta_data():
+def handle_meta_data(filename):
     global meta_data
-    meta_doc = minidom.parse('1059264_metadata.xml')
+    meta_doc = minidom.parse(filename)
     match = meta_doc.getElementsByTagName("match")
     meta = MetaData(match[0].attributes["iId"].value, match[0].attributes["dtDate"].value)
     meta.set_periods(meta_doc.getElementsByTagName("period"))
     meta_data = meta.toJSON()
 
 
-def process_meta(filename):
-    print(filename)
+def process_data(filename):
+    data = [i.strip().split(';') for i in open(filename).readlines()]
 
+    #data = []
+    #f = open(filename)
+    #lines = f.readlines()
+    #for line in tqdm(lines):
+    #   data.append(line.strip().split(';'))
 
-def process_data():
-    data = []
-    f = open("./test2.dat")
-    lines = f.readlines()
-    for line in tqdm(lines):
-       data.append(line.strip().split(';'))
-
-    clean_data(data, run_app)
+    clean_data(data)
 
 
 if __name__ == "__main__":
-    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-    app.secret_key = 'super secret key'
-    app.config['SESSION_TYPE'] = 'filesystem'
 
-    handle_meta_data()
-    process_data()
+    #handle_meta_data()
+    #process_data()
 
+    run_app()
 
     #data = [i.strip().split(';') for i in open("./first_frame.dat").readlines()]
     #data = [i.strip().split(';') for i in open("./test2.dat").readlines()]

@@ -13,7 +13,9 @@ export default class App extends React.Component {
             status: "",
             possession: "",
             meta_data: null,
-            has_files:true
+            has_files:false,
+            has_data_file: false,
+            has_meta_file:false
         };
     }
 
@@ -25,17 +27,24 @@ export default class App extends React.Component {
     handleMeta = (metaData) => {
         if(metaData !== null){
             this.setState({meta_data:metaData})
-            console.log("ONCE CALLED METHOD", metaData);
         }
     };
 
-    handleFileUploaded = () => {
-        this.setState({has_files:true})
+    handleFileUploaded = (msg) => {
+        if(msg === "xml"){
+            this.setState({has_meta_file:true})
+        } else if (msg === "dat"){
+            this.setState({has_data_file:true})
+        }
+
+        if(this.state.has_meta_file && this.state.has_data_file){
+            this.setState({has_files:true})
+        }
     };
 
     render() {
         return(
-            <div>
+            <div className={"main"}>
                 {!this.state.has_files ? (
                     <ReactFileDrop callback={this.handleFileUploaded}></ReactFileDrop>
                 ) : (
