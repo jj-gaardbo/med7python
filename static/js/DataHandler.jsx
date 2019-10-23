@@ -77,9 +77,6 @@ export default class DataHandler extends React.Component {
     }
 
     play(){
-        if(this.state.meta === null){
-            this.getPythonMetaData()
-        }
         this.setState({paused:false})
         this.setState({intervalID: setInterval(this.getPythonData, this.state.timeout)})
     }
@@ -89,10 +86,14 @@ export default class DataHandler extends React.Component {
         clearInterval(this.state.intervalID);
     }
 
+    componentDidMount() {
+        this.getPythonMetaData()
+    }
+
     render () {
         const { x } = this.state.x;
         return (
-            <div>
+            <div className={"timeline-controls"}>
                 <div className="progress-bar" onClick={this.getTimeFrame} onMouseMove={this._onMouseMove.bind(this)} ref={(div) => {progressBar = div}}>
                     <div className="progress-indicator" style={{width: `${this.getProgress()}%`}}/>
                 </div>

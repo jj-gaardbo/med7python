@@ -16,7 +16,6 @@ export default class P5Sketch extends Component {
     bg;
     data;
     canvas;
-    players = [];
     playerObjects = [];
     ball;
     show_voronoi = false;
@@ -27,31 +26,46 @@ export default class P5Sketch extends Component {
     constructor(props){
         super(props);
         this.state = {
+            players: [],
+            ball:null,
             data: [],
             delaunay: null,
             points: [],
             points_h: [],
             points_a: [],
-            voronoi: null
+            voronoi: null,
+            sidebar:{}
         }
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        if(this.props.current_frame.length === 0){return;}
+    componentDidMount = () => {
+        this.setState({sidebar:this.props.sidebarStates});
+    };
 
-        this.players = this.props.current_frame.players;
-        this.ball = this.props.current_frame.ball;
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        this.updatePoints();
+        this.show_voronoi = this.props.sidebarStates.showVoronoi
+        this.show_convex_hull = this.props.sidebarStates.showConvex
+        this.show_convex_hull_h = this.props.sidebarStates.showConvexH
+        this.show_convex_hull_a = this.props.sidebarStates.showConvexA
+    }
+
+    updatePoints(){
+        if(this.props.current_frame === null || this.props.current_frame.length === 0){return;}
+
+        this.state.players = this.props.current_frame.players;
+        this.state.ball = this.props.current_frame.ball;
 
         this.state.points = [];
         this.state.points_h = [];
         this.state.points_a = [];
-        for(let i = 0; i < this.players.length; i++){
-            let position = [this.players[i].x_pos, this.players[i].y_pos];
+        for(let i = 0; i < this.state.players.length; i++){
+            let position = [this.state.players[i].x_pos, this.state.players[i].y_pos];
             if(position[0] > (1360-47) || position[0] < (47) || position[1] > (916-47) || position[1] < (0+47)){
                 continue;
             }
 
-            if(this.players[i].team === HOME){
+            if(this.state.players[i].team === HOME){
                 this.state.points_h.push(position);
             } else {
                 this.state.points_a.push(position);
@@ -72,38 +86,45 @@ export default class P5Sketch extends Component {
         voronoi_a.update();
     }
 
+    checkteam(){
+        if(this.h_team.length < 11){
+            return HOME;
+        } else if(this.a_team.length < 11){
+            return AWAY
+        }
+    }
+
+    mouseClicked = (p5) => {
+
+    };
+
+    mouseDragged = (p5) => {
+
+    };
+
+    mousePressed = (p5) => {
+
+    };
+
     setup = (p5, canvasParentRef) => {
         this.canvas = p5.createCanvas(1360, 916).parent(canvasParentRef);
         this.bg = p5.loadImage("dist/6ce1c9bce4091f1e0a741dea7c4d2564.png");
     };
-
-    /*player = (x, y, team, id) => {
-        this.x = x;
-        this.y = y;
-        this.r = 20;
-        this.team = team;
-        this.id = id;
-
-        this.display = function(){
-            p5.stroke(255)
-            p5.ellipse(this.x, this.y, this.r, this.r);
-        }
-    };*/
 
     draw = p5 => {
         if(this.bg){
             p5.background(this.bg);
         }
 
-        if(this.ball){
+        if(this.state.ball){
             p5.stroke(0)
             p5.fill(255)
-            p5.ellipse(this.ball.x_pos, this.ball.y_pos, 10, 10);
+            p5.ellipse(this.state.ball.x_pos, this.state.ball.y_pos, 10, 10);
         }
 
-        if(this.players.length > 0){
-            for(let i = 0; i < this.players.length; i++){
-                let players = this.players;
+        if(this.state.players.length > 0){
+            for(let i = 0; i < this.state.players.length; i++){
+                let players = this.state.players;
                 if(players[i].team === HOME){
                     p5.fill("blue");
                 } else {
@@ -114,12 +135,22 @@ export default class P5Sketch extends Component {
             }
         }
 
-        p5.strokeWeight(2);
-        p5.fill("#00000033");
-        p5.stroke(255);
+        this.updatePoints();
 
         let context = p5.canvas.getContext("2d");
+
+        this.displayVoronoi(p5, context);
+
+        this.convexHull_H(p5, context);
+
+        this.convexHull_A(p5, context);
+    };
+
+    displayVoronoi(p5, context){
         if(this.show_voronoi && delaunay != null){
+            p5.strokeWeight(2);
+            p5.fill("#00000033");
+            p5.stroke(255);
             context.beginPath();
             voronoi.update().render(context);
             voronoi.renderBounds(context);
@@ -135,27 +166,29 @@ export default class P5Sketch extends Component {
                 context.fill();
             }
         }
+    }
 
+    convexHull_H(p5, context){
         if(this.show_convex_hull_h && delaunay_h != null){
             context.fillStyle = "#ffffff44";
             context.beginPath();
             voronoi_h.delaunay.renderHull(context);
             context.fill();
         }
+    }
 
+    convexHull_A(p5, context){
         if(this.show_convex_hull_a && delaunay_a != null){
             context.fillStyle = "#ff000044";
             context.beginPath();
             voronoi_a.delaunay.renderHull(context);
             context.fill();
         }
-    };
-
-
+    }
 
     render() {
         return (
-            <Sketch setup={this.setup} draw={this.draw} />
+            <Sketch setup={this.setup} draw={this.draw} mouseClicked={this.mouseClicked} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged}/>
         );
     }
 }

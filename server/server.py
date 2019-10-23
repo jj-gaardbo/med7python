@@ -10,6 +10,8 @@ from tqdm import tqdm
 from xml.dom import minidom
 from werkzeug.utils import secure_filename
 from flask import Flask, request, render_template, jsonify, flash, redirect, url_for
+import webbrowser
+from threading import Timer
 
 UPLOAD_FOLDER = './uploads'
 ALLOWED_EXTENSIONS = {'dat', 'xml'}
@@ -234,7 +236,12 @@ def index():
     return render_template("index.html")
 
 
+def open_browser():
+    webbrowser.open_new('http://127.0.0.1:5000/')
+
+
 def run_app():
+    Timer(1, open_browser).start()
     app.run()
 
 
@@ -249,26 +256,8 @@ def handle_meta_data(filename):
 
 def process_data(filename):
     data = [i.strip().split(';') for i in open(filename).readlines()]
-
-    #data = []
-    #f = open(filename)
-    #lines = f.readlines()
-    #for line in tqdm(lines):
-    #   data.append(line.strip().split(';'))
-
     clean_data(data)
 
 
 if __name__ == "__main__":
-
-    #handle_meta_data()
-    #process_data()
-
     run_app()
-
-    #data = [i.strip().split(';') for i in open("./first_frame.dat").readlines()]
-    #data = [i.strip().split(';') for i in open("./test2.dat").readlines()]
-    #data = [i.strip().split(';') for i in open("./1059264.min.dat").readlines()]
-    #handle_meta_data()
-
-
