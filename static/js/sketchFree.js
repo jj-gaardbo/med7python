@@ -113,6 +113,9 @@ export default class P5FreeSketch extends Component {
     show_convex_hull = false;
     show_convex_hull_h = true;
     show_convex_hull_a = false;
+    show_guardiola = false;
+    width = 1360;
+    height = 916;
 
     constructor(props){
         super(props);
@@ -139,6 +142,7 @@ export default class P5FreeSketch extends Component {
         this.show_convex_hull = this.props.sidebarStates.showConvex
         this.show_convex_hull_h = this.props.sidebarStates.showConvexH
         this.show_convex_hull_a = this.props.sidebarStates.showConvexA
+        this.show_guardiola = this.props.sidebarStates.showGuardiola
     }
 
     updatePoints(){
@@ -275,6 +279,8 @@ export default class P5FreeSketch extends Component {
         this.convexHull_H(p5, context);
 
         this.convexHull_A(p5, context);
+
+        this.guardiolaZones(p5);
     };
 
     displayVoronoi(p5, context){
@@ -314,6 +320,30 @@ export default class P5FreeSketch extends Component {
             context.beginPath();
             voronoi_a.delaunay.renderHull(context);
             context.fill();
+        }
+    }
+
+    guardiolaZones(p5){
+        if(this.show_guardiola){
+            p5.strokeWeight(3);
+            p5.stroke("#000000")
+            let padding = 45;
+            p5.line(padding, 354, this.width-padding, 354);
+            p5.line(padding, 574, this.width-padding, 574);
+
+            p5.line(padding, 223, this.width-padding, 223);
+            p5.line(padding, 705, this.width-padding, 705);
+
+            p5.line(244, padding, 244, this.height-padding);
+            p5.line(1116, padding, 1116, this.height-padding);
+
+            p5.line(this.width/2-1, padding, this.width/2-1, this.height-padding);
+
+            p5.line(this.width/3-20, padding, this.width/3-20, padding+178);
+            p5.line(this.width/3-20, this.height-(164+padding), this.width/3-20, this.height-padding);
+
+            p5.line(this.width-(this.width/3)+20, padding, this.width-(this.width/3)+20, padding+178);
+            p5.line(this.width+20-(this.width/3), this.height-(164+padding), this.width+20-(this.width/3), this.height-padding);
         }
     }
 

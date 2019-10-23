@@ -13,6 +13,7 @@ export default class SideBar extends React.Component {
             showConvex : false,
             showConvexH : false,
             showConvexA : false,
+            showGuardiola: false
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -21,6 +22,7 @@ export default class SideBar extends React.Component {
         this.toggleConvex = this.toggleConvex.bind(this);
         this.toggleConvexH = this.toggleConvexH.bind(this);
         this.toggleConvexA = this.toggleConvexA.bind(this);
+        this.toggleGuardiola = this.toggleGuardiola.bind(this);
     }
 
     componentDidMount() {
@@ -67,6 +69,11 @@ export default class SideBar extends React.Component {
         this.props.callback(this.state);
     }
 
+    toggleGuardiola(){
+        this.setState({showGuardiola:!this.state.showGuardiola});
+        this.props.callback(this.state);
+    }
+
     componentDidUpdate(prevProps, prevState, snapshot) {
         if(this.props.sketchStates.placePlayers === false){
             this.state.placePlayers = false;
@@ -105,6 +112,11 @@ export default class SideBar extends React.Component {
                 <button className={"btn btn-block menu "+ (this.state.showConvexA ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvexA }>
                     <i className="fa fa-user"></i>
                     Show Convex hull (Away)
+                </button>
+
+                <button className={"btn btn-block menu "+ (this.state.showGuardiola ? "btn-primary":"btn-secondary")} onClick={ this.toggleGuardiola }>
+                    <i className="fa fa-user"></i>
+                    Show Guardiola Zones
                 </button>
 
             </Menu>
