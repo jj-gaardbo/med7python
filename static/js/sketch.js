@@ -1,12 +1,10 @@
 import React, { Component } from 'react'
 import Sketch from 'react-p5'
 import {Delaunay} from "d3-delaunay";
-import {Ball, Player} from "./sketchFree";
-let ObservableArray = require('observable-array');
-
-
-const HOME = "H";
-const AWAY = "A";
+import SideBar from "./SideBar";
+import Player from "./Player"
+import Ball from "./Ball"
+import {HOME, AWAY} from "./Constants"
 
 let delaunay = null;
 let delaunay_h = null;
@@ -14,7 +12,6 @@ let delaunay_a = null;
 let voronoi = null;
 let voronoi_h = null;
 let voronoi_a = null;
-
 
 let initialHomeTeam = [];
 let initialAwayTeam = [];
@@ -35,7 +32,7 @@ export default class P5Sketch extends Component {
     show_guardiola = false;
     width = 1360;
     height = 916;
-    show_trails = false;
+    show_trail = false;
 
 
     constructor(props){
@@ -51,22 +48,15 @@ export default class P5Sketch extends Component {
             points_h: [],
             points_a: [],
             voronoi: null,
-            sidebar:{}
         }
     }
 
     componentDidMount = () => {
-        this.setState({sidebar:this.props.sidebarStates, paused:this.props.paused});
+        this.setState({paused:this.props.paused});
     };
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         this.updatePoints();
-        this.show_voronoi = this.props.sidebarStates.showVoronoi
-        this.show_convex_hull = this.props.sidebarStates.showConvex
-        this.show_convex_hull_h = this.props.sidebarStates.showConvexH
-        this.show_convex_hull_a = this.props.sidebarStates.showConvexA
-        this.show_guardiola = this.props.sidebarStates.showGuardiola
-        this.show_trails = this.props.sidebarStates.showTrail
     }
 
     setupPlayers(players){
@@ -177,14 +167,6 @@ export default class P5Sketch extends Component {
     mouseClicked = (p5) => {
         if(!this.state.paused){return;}
 
-        let toolstate = this.props.sidebarStates;
-        if(toolstate.placePlayers && !toolstate.menuOpen){
-            if(this.player_iter === -1){
-                this.player_iter++;
-                return;
-            }
-            this.placePlayer(p5.mouseX, p5.mouseY)
-        }
         for(let i = 0; i < this.state.players.length; i++){
             this.state.players[i].clicked(p5);
         }
@@ -242,14 +224,14 @@ export default class P5Sketch extends Component {
             p5.background(this.bg);
         }
 
-        if(this.state.ball !== null){
-            this.state.ball.display(p5);
-        }
-
         if(this.state.players.length > 0 || typeof this.state.players[0] !== 'undefined'){
             for(let i = 0; i < this.state.players.length; i++){
-                this.state.players[i].display(p5, this.show_trails, this.state.paused, this.state.edited);
+                this.state.players[i].display(p5, this.show_trail, this.state.paused, this.state.edited);
             }
+        }
+
+        if(this.state.ball !== null){
+            this.state.ball.display(p5);
         }
 
         this.updatePoints();
@@ -257,6 +239,8 @@ export default class P5Sketch extends Component {
         let context = p5.canvas.getContext("2d");
 
         this.displayVoronoi(p5, context);
+
+        this.convexHull(p5, context);
 
         this.convexHull_H(p5, context);
 
@@ -278,12 +262,15 @@ export default class P5Sketch extends Component {
             context.beginPath();
             voronoi.delaunay.renderPoints(context, 4);
             context.fill();
+        }
+    }
 
-            if(this.show_convex_hull){
-                context.beginPath();
-                voronoi.delaunay.renderHull(context);
-                context.fill();
-            }
+    convexHull(p5, context){
+        if(this.show_convex_hull && delaunay != null){
+            context.fillStyle = "#00ff0044";
+            context.beginPath();
+            voronoi.delaunay.renderHull(context);
+            context.fill();
         }
     }
 
@@ -329,9 +316,22 @@ export default class P5Sketch extends Component {
         }
     }
 
+    handleSidebarStates = (sidebarStates) => {
+        this.state.menuOpen = sidebarStates.menuOpen;
+        this.show_voronoi = sidebarStates.show_voronoi;
+        this.show_convex_hull = sidebarStates.show_convex;
+        this.show_convex_hull_h = sidebarStates.show_convexH;
+        this.show_convex_hull_a = sidebarStates.show_convexA;
+        this.show_guardiola = sidebarStates.show_guardiola;
+        this.show_trail = sidebarStates.show_trail;
+    };
+
     render() {
         return (
-            <Sketch setup={this.setup} draw={this.draw} mouseClicked={this.mouseClicked} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} mouseReleased={this.mouseReleased}/>
+            <div>
+                <SideBar freehand={false} callback={this.handleSidebarStates} sketchStates={this.state} />
+                <Sketch setup={this.setup} draw={this.draw} mouseClicked={this.mouseClicked} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} mouseReleased={this.mouseReleased}/>
+            </div>
         );
     }
 }

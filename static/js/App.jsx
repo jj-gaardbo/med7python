@@ -3,7 +3,6 @@ import DataHandler from "./DataHandler";
 import P5Sketch from './sketch.js';
 import P5FreeSketch from './sketchFree.js';
 import ReactFileDrop from "./FileDrop";
-import SideBar from "./SideBar";
 require('../css/fullstack.css');
 
 export default class App extends React.Component {
@@ -19,22 +18,12 @@ export default class App extends React.Component {
             has_data_file: false,
             has_meta_file:false,
             freehand: false,
-            sidebar: {},
-            sketch: {},
             paused: null,
             newframe: false
         };
 
         this.openFreeHandSketch = this.openFreeHandSketch.bind(this);
     }
-
-    handleSidebarStates = (sidebarStates) => {
-        this.setState({sidebar:sidebarStates});
-    };
-
-    handleSketchChanges = (sketchStates) => {
-        this.setState({sketch:sketchStates});
-    };
 
     handleChange = (frameData) => {
         let parsed = JSON.parse(frameData);
@@ -75,8 +64,7 @@ export default class App extends React.Component {
             <div className={"main"} id="page-wrap">
                 {this.state.freehand ? (
                 <div className='header-contents freehand-sketch'>
-                    <SideBar freehand={true} callback={this.handleSidebarStates} sketchStates={this.state.sketch}></SideBar>
-                    <P5FreeSketch possession={this.state.possession} sidebarStates={this.state.sidebar} callback={this.handleSketchChanges}/>
+                    <P5FreeSketch possession={this.state.possession}/>
                 </div>
                 ) : (
                     <div>
@@ -87,8 +75,7 @@ export default class App extends React.Component {
                             <DataHandler callback={this.handleChange} metaCallback={this.handleMeta} pauseCallback={this.handlePause}/>
                             {this.state.meta_data !== null &&
                                 <div>
-                                    <SideBar freehand={false} callback={this.handleSidebarStates} sketchStates={this.state.sketch}></SideBar>
-                                    <P5Sketch sidebarStates={this.state.sidebar} callback={this.handleSketchChanges} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
+                                    <P5Sketch current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
                                 </div>
                             }
                             <div className="match-details">

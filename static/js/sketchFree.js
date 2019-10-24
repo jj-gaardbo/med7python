@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import Sketch from 'react-p5'
 import {Delaunay} from "d3-delaunay";
-
-const HOME = "H";
-const AWAY = "A";
+import SideBar from "./SideBar";
+import Player from "./Player"
+import Ball from "./Ball"
+import {HOME, AWAY} from "./Constants"
 
 let delaunay = null;
 let delaunay_h = null;
@@ -11,129 +12,6 @@ let delaunay_a = null;
 let voronoi = null;
 let voronoi_h = null;
 let voronoi_a = null;
-
-export class Ball {
-    constructor(x, y, z){
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.max = 2000;
-        this.min = 0;
-        this.r = 10;
-        this.id = "ball";
-        this.is_clicked = false;
-        this.is_dragged = false;
-        this.is_pressed = false;
-    }
-
-    scaleR = function(val) {
-        return (val - this.min) / (this.max - this.min);
-    };
-
-    display = function(p5){
-        let scaled = this.r+this.scaleR(this.z)*20;
-        if(this.z > 10){
-            /*p5.stroke(0);
-            p5.fill(0);
-            p5.ellipse(this.x-20, this.y-20, this.r, this.r);*/
-        }
-        p5.stroke(0);
-        p5.fill(255);
-        p5.ellipse(this.x, this.y, scaled, scaled);
-
-    };
-
-    pressing = function(p5){
-        if(p5.mouseX > this.x-this.r+5 && p5.mouseX < this.x + this.r+5 && p5.mouseY > this.y-this.r+5 && p5.mouseY < this.y + this.r+5){
-            this.is_pressed = true;
-            return this.id;
-        }
-    };
-
-    clicked = function(p5){
-        if(p5.mouseX > this.x-this.r+5 && p5.mouseX < this.x + this.r+5 && p5.mouseY > this.y-this.r+5 && p5.mouseY < this.y + this.r+5){
-            this.is_clicked = true;
-            return this.id;
-        }
-    };
-
-    dragged = function(p5){
-        this.r = 30;
-        if(p5.mouseX > this.x-this.r+5 && p5.mouseX < this.x + this.r+5 && p5.mouseY > this.y-this.r+5 && p5.mouseY < this.y + this.r+5){
-            this.is_dragged = true;
-            this.x = p5.mouseX;
-            this.y = p5.mouseY;
-            return this.id;
-        }
-    };
-}
-
-export class Player {
-    constructor(x, y, team, id){
-        this.x = x;
-        this.y = y;
-        this.r = 20;
-        this.originalTeam = team;
-        this.team = team;
-        this.id = id;
-        this.is_clicked = false;
-        this.is_dragged = false;
-        this.is_pressed = false;
-        this.edited = false;
-        this.trail = [];
-    }
-
-    display = function(p5, trails=null, paused=false){
-        if(!paused){
-            this.trail.push(p5.createVector(this.x, this.y));
-            if(this.trail.length >= 20) this.trail.shift();
-        }
-
-        if(trails && !this.edited){
-            for(let i = 0; i < this.trail.length; i++){
-                p5.ellipse(this.trail[i].x, this.trail[i].y, i, i);
-            }
-        }
-
-        p5.stroke(255);
-        if(this.team === "H"){
-            p5.fill("blue")
-        } else {
-            p5.fill("red")
-        }
-        p5.ellipse(this.x, this.y, this.r, this.r);
-
-        p5.fill(255);
-        p5.text(this.id, this.x, this.y);
-    };
-
-    pressing = function(p5){
-        if(p5.mouseX > this.x-this.r+5 && p5.mouseX < this.x + this.r+5 && p5.mouseY > this.y-this.r+5 && p5.mouseY < this.y + this.r+5){
-            this.is_pressed = true;
-            this.edited = true;
-            return this.id;
-        }
-    };
-
-    clicked = function(p5){
-        if(p5.mouseX > this.x-this.r+5 && p5.mouseX < this.x + this.r+5 && p5.mouseY > this.y-this.r+5 && p5.mouseY < this.y + this.r+5){
-            this.is_clicked = true;
-            this.edited = true;
-            return this.id;
-        }
-    };
-
-    dragged = function(p5){
-        this.edited = true;
-        this.r = 30;
-        if(p5.mouseX > this.x-this.r+5 && p5.mouseX < this.x + this.r+5 && p5.mouseY > this.y-this.r+5 && p5.mouseY < this.y + this.r+5){
-            this.is_dragged = true;
-            this.x = p5.mouseX;
-            this.y = p5.mouseY;
-            return this.id;
-        }
-    };
-}
 
 export default class P5FreeSketch extends Component {
     bg;
@@ -143,9 +21,9 @@ export default class P5FreeSketch extends Component {
     h_team = [];
     a_team = [];
     playerObjects = [];
-    show_voronoi = true;
+    show_voronoi = false;
     show_convex_hull = false;
-    show_convex_hull_h = true;
+    show_convex_hull_h = false;
     show_convex_hull_a = false;
     show_guardiola = false;
     width = 1360;
@@ -161,22 +39,12 @@ export default class P5FreeSketch extends Component {
             points_h: [],
             points_a: [],
             voronoi: null,
-            sidebar:{}
         }
 
     }
 
-    componentDidMount = () => {
-        this.setState({sidebar:this.props.sidebarStates});
-    };
-
     componentDidUpdate(prevProps, prevState, snapshot) {
         this.updatePoints();
-        this.show_voronoi = this.props.sidebarStates.showVoronoi
-        this.show_convex_hull = this.props.sidebarStates.showConvex
-        this.show_convex_hull_h = this.props.sidebarStates.showConvexH
-        this.show_convex_hull_a = this.props.sidebarStates.showConvexA
-        this.show_guardiola = this.props.sidebarStates.showGuardiola
     }
 
     updatePoints(){
@@ -237,8 +105,7 @@ export default class P5FreeSketch extends Component {
     }
 
     mouseClicked = (p5) => {
-        let toolstate = this.props.sidebarStates;
-        if(toolstate.placePlayers && !toolstate.menuOpen){
+        if(this.state.placePlayers && !this.state.menuOpen){
             if(this.player_iter === -1){
                 this.player_iter++;
                 return;
@@ -294,9 +161,6 @@ export default class P5FreeSketch extends Component {
         if(this.bg){
             p5.background(this.bg);
         }
-        if(this.state.ball !== null){
-            this.state.ball.display(p5);
-        }
 
         if(this.state.players.length > 0 || typeof this.state.players[0] !== 'undefined'){
             for(let i = 0; i < this.state.players.length; i++){
@@ -304,11 +168,17 @@ export default class P5FreeSketch extends Component {
             }
         }
 
+        if(this.state.ball !== null){
+            this.state.ball.display(p5);
+        }
+
         this.updatePoints();
 
         let context = p5.canvas.getContext("2d");
 
         this.displayVoronoi(p5, context);
+
+        this.convexHull(p5, context);
 
         this.convexHull_H(p5, context);
 
@@ -330,12 +200,15 @@ export default class P5FreeSketch extends Component {
             context.beginPath();
             voronoi.delaunay.renderPoints(context, 4);
             context.fill();
+        }
+    }
 
-            if(this.show_convex_hull){
-                context.beginPath();
-                voronoi.delaunay.renderHull(context);
-                context.fill();
-            }
+    convexHull(p5, context){
+        if(this.show_convex_hull && delaunay != null){
+            context.fillStyle = "#00ff0044";
+            context.beginPath();
+            voronoi.delaunay.renderHull(context);
+            context.fill();
         }
     }
 
@@ -381,9 +254,22 @@ export default class P5FreeSketch extends Component {
         }
     }
 
+    handleSidebarStates = (sidebarStates) => {
+        this.state.placePlayers = sidebarStates.placePlayers;
+        this.state.menuOpen = sidebarStates.menuOpen;
+        this.show_voronoi = sidebarStates.show_voronoi;
+        this.show_convex_hull = sidebarStates.show_convex;
+        this.show_convex_hull_h = sidebarStates.show_convexH;
+        this.show_convex_hull_a = sidebarStates.show_convexA;
+        this.show_guardiola = sidebarStates.show_guardiola;
+    };
+
     render() {
         return (
-            <Sketch setup={this.setup} draw={this.draw} mouseClicked={this.mouseClicked} mouseReleased={this.mouseReleased} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} />
+            <div>
+                <SideBar freehand={true} callback={this.handleSidebarStates} sketchStates={this.state} />
+                <Sketch setup={this.setup} draw={this.draw} mouseClicked={this.mouseClicked} mouseReleased={this.mouseReleased} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} />
+            </div>
         );
     }
 }

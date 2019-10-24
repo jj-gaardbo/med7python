@@ -9,12 +9,12 @@ export default class SideBar extends React.Component {
             sketch: {},
             menuOpen: false,
             placePlayers : false,
-            showVoronoi : false,
-            showConvex : false,
-            showConvexH : false,
-            showConvexA : false,
-            showGuardiola: false,
-            showTrail:false,
+            show_voronoi : false,
+            show_convex : false,
+            show_convexH : false,
+            show_convexA : false,
+            show_cuardiola: false,
+            show_trail:false,
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -33,12 +33,12 @@ export default class SideBar extends React.Component {
     }
 
     handleChange(){
+        console.log("CHANGE");
         this.props.callback(this.state);
     }
 
     handleStateChange (state) {
         this.setState({menuOpen: state.isOpen});
-        this.props.callback(this.state);
     }
 
     closeMenu () {
@@ -46,38 +46,39 @@ export default class SideBar extends React.Component {
     }
 
     placePlayers () {
-        this.setState({placePlayers : !this.state.placePlayers});
-        this.closeMenu();
+        this.state.placePlayers = !this.state.placePlayers;
+        this.state.menuOpen = false;
         this.props.callback(this.state);
+        this.closeMenu();
     }
 
     toggleVoronoi(){
-        this.setState({showVoronoi:!this.state.showVoronoi});
+        this.state.show_voronoi = !this.state.show_voronoi;
         this.props.callback(this.state);
     }
 
     toggleConvex(){
-        this.setState({showConvex:!this.state.showConvex});
+        this.state.show_convex = !this.state.show_convex;
         this.props.callback(this.state);
     }
 
     toggleConvexH(){
-        this.setState({showConvexH:!this.state.showConvexH});
+        this.state.show_convexH = !this.state.show_convexH;
         this.props.callback(this.state);
     }
 
     toggleConvexA(){
-        this.setState({showConvexA:!this.state.showConvexA});
+        this.state.show_convexA = !this.state.show_convexA;
         this.props.callback(this.state);
     }
 
     toggleGuardiola(){
-        this.setState({showGuardiola:!this.state.showGuardiola});
+        this.state.show_guardiola = !this.state.show_guardiola;
         this.props.callback(this.state);
     }
 
     toggleTrail(){
-        this.setState({showTrail:!this.state.showTrail});
+        this.state.show_trail = !this.state.show_trail;
         this.props.callback(this.state);
     }
 
@@ -98,33 +99,33 @@ export default class SideBar extends React.Component {
                         Place players
                     </button>
                 ) : (
-                    <button className={"btn btn-block menu "+ (this.state.showTrail ? "btn-primary":"btn-secondary")} onClick={ this.toggleTrail }>
+                    <button className={"btn btn-block menu "+ (this.state.show_trail ? "btn-primary":"btn-secondary")} onClick={ this.toggleTrail }>
                         <i className="fa fa-user"></i>
                         Show trails
                     </button>
                 )}
 
-                <button className={"btn btn-block menu "+ (this.state.showVoronoi ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoi }>
+                <button className={"btn btn-block menu "+ (this.state.show_voronoi ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoi }>
                     <i className="fa fa-user"></i>
                     Show voronoi
                 </button>
 
-                <button className={"btn btn-block menu "+ (this.state.showConvex ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvex }>
+                <button className={"btn btn-block menu "+ (this.state.show_convex ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvex }>
                     <i className="fa fa-user"></i>
                     Show Convex hull
                 </button>
 
-                <button className={"btn btn-block menu "+ (this.state.showConvexH ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvexH }>
+                <button className={"btn btn-block menu "+ (this.state.show_convexH ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvexH }>
                     <i className="fa fa-user"></i>
                     Show Convex hull (Home)
                 </button>
 
-                <button className={"btn btn-block menu "+ (this.state.showConvexA ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvexA }>
+                <button className={"btn btn-block menu "+ (this.state.show_convexA ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvexA }>
                     <i className="fa fa-user"></i>
                     Show Convex hull (Away)
                 </button>
 
-                <button className={"btn btn-block menu "+ (this.state.showGuardiola ? "btn-primary":"btn-secondary")} onClick={ this.toggleGuardiola }>
+                <button className={"btn btn-block menu "+ (this.state.show_guardiola ? "btn-primary":"btn-secondary")} onClick={ this.toggleGuardiola }>
                     <i className="fa fa-user"></i>
                     Show Guardiola Zones
                 </button>
