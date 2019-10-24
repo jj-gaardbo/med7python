@@ -8,6 +8,7 @@ export default class DataHandler extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            paused:true,
             data: "",
             dataLength: 0,
             frame: 0,
@@ -39,6 +40,9 @@ export default class DataHandler extends React.Component {
         $.get(window.location.href + 'data?frame='+frame, (data) => {
             this.setState({data: data});
             this.props.callback(data);
+            if(this.state.paused){
+                this.props.pauseCallback(true, true);
+            }
         }).done(function() {
             self.setState({frame: frame+self.state.skip_frames});
         });
@@ -63,7 +67,7 @@ export default class DataHandler extends React.Component {
 
         $.get(window.location.href + 'data?frame='+frame, (data) => {
             this.setState({data: data});
-            this.props.callback(data);
+            this.props.callback(data, this.state.paused);
         }).done(function() {
             self.setState({frame: frame+self.state.skip_frames});
         });
@@ -77,13 +81,15 @@ export default class DataHandler extends React.Component {
     }
 
     play(){
-        this.setState({paused:false})
+        this.setState({paused:false});
         this.setState({intervalID: setInterval(this.getPythonData, this.state.timeout)})
+        this.props.pauseCallback(false);
     }
 
     pause(){
-        this.setState({paused:true})
+        this.setState({paused:true});
         clearInterval(this.state.intervalID);
+        this.props.pauseCallback(true);
     }
 
     componentDidMount() {

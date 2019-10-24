@@ -13,7 +13,8 @@ export default class SideBar extends React.Component {
             showConvex : false,
             showConvexH : false,
             showConvexA : false,
-            showGuardiola: false
+            showGuardiola: false,
+            showTrail:false,
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -23,6 +24,7 @@ export default class SideBar extends React.Component {
         this.toggleConvexH = this.toggleConvexH.bind(this);
         this.toggleConvexA = this.toggleConvexA.bind(this);
         this.toggleGuardiola = this.toggleGuardiola.bind(this);
+        this.toggleTrail = this.toggleTrail.bind(this);
     }
 
     componentDidMount() {
@@ -74,6 +76,11 @@ export default class SideBar extends React.Component {
         this.props.callback(this.state);
     }
 
+    toggleTrail(){
+        this.setState({showTrail:!this.state.showTrail});
+        this.props.callback(this.state);
+    }
+
     componentDidUpdate(prevProps, prevState, snapshot) {
         if(this.props.sketchStates.placePlayers === false){
             this.state.placePlayers = false;
@@ -91,7 +98,10 @@ export default class SideBar extends React.Component {
                         Place players
                     </button>
                 ) : (
-                    <div></div>
+                    <button className={"btn btn-block menu "+ (this.state.showTrail ? "btn-primary":"btn-secondary")} onClick={ this.toggleTrail }>
+                        <i className="fa fa-user"></i>
+                        Show trails
+                    </button>
                 )}
 
                 <button className={"btn btn-block menu "+ (this.state.showVoronoi ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoi }>

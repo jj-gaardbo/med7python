@@ -13,9 +13,12 @@ let voronoi_h = null;
 let voronoi_a = null;
 
 export class Ball {
-    constructor(x, y){
+    constructor(x, y, z){
         this.x = x;
         this.y = y;
+        this.z = z;
+        this.max = 2000;
+        this.min = 0;
         this.r = 10;
         this.id = "ball";
         this.is_clicked = false;
@@ -23,10 +26,21 @@ export class Ball {
         this.is_pressed = false;
     }
 
+    scaleR = function(val) {
+        return (val - this.min) / (this.max - this.min);
+    };
+
     display = function(p5){
+        let scaled = this.r+this.scaleR(this.z)*20;
+        if(this.z > 10){
+            /*p5.stroke(0);
+            p5.fill(0);
+            p5.ellipse(this.x-20, this.y-20, this.r, this.r);*/
+        }
         p5.stroke(0);
         p5.fill(255);
-        p5.ellipse(this.x, this.y, this.r, this.r);
+        p5.ellipse(this.x, this.y, scaled, scaled);
+
     };
 
     pressing = function(p5){
@@ -59,14 +73,28 @@ export class Player {
         this.x = x;
         this.y = y;
         this.r = 20;
+        this.originalTeam = team;
         this.team = team;
         this.id = id;
         this.is_clicked = false;
         this.is_dragged = false;
         this.is_pressed = false;
+        this.edited = false;
+        this.trail = [];
     }
 
-    display = function(p5){
+    display = function(p5, trails=null, paused=false){
+        if(!paused){
+            this.trail.push(p5.createVector(this.x, this.y));
+            if(this.trail.length >= 20) this.trail.shift();
+        }
+
+        if(trails && !this.edited){
+            for(let i = 0; i < this.trail.length; i++){
+                p5.ellipse(this.trail[i].x, this.trail[i].y, i, i);
+            }
+        }
+
         p5.stroke(255);
         if(this.team === "H"){
             p5.fill("blue")
@@ -74,11 +102,15 @@ export class Player {
             p5.fill("red")
         }
         p5.ellipse(this.x, this.y, this.r, this.r);
+
+        p5.fill(255);
+        p5.text(this.id, this.x, this.y);
     };
 
     pressing = function(p5){
         if(p5.mouseX > this.x-this.r+5 && p5.mouseX < this.x + this.r+5 && p5.mouseY > this.y-this.r+5 && p5.mouseY < this.y + this.r+5){
             this.is_pressed = true;
+            this.edited = true;
             return this.id;
         }
     };
@@ -86,11 +118,13 @@ export class Player {
     clicked = function(p5){
         if(p5.mouseX > this.x-this.r+5 && p5.mouseX < this.x + this.r+5 && p5.mouseY > this.y-this.r+5 && p5.mouseY < this.y + this.r+5){
             this.is_clicked = true;
+            this.edited = true;
             return this.id;
         }
     };
 
     dragged = function(p5){
+        this.edited = true;
         this.r = 30;
         if(p5.mouseX > this.x-this.r+5 && p5.mouseX < this.x + this.r+5 && p5.mouseY > this.y-this.r+5 && p5.mouseY < this.y + this.r+5){
             this.is_dragged = true;
@@ -253,7 +287,7 @@ export default class P5FreeSketch extends Component {
         this.canvas = p5.createCanvas(1360, 916).parent(canvasParentRef);
         this.bg = p5.loadImage("dist/6ce1c9bce4091f1e0a741dea7c4d2564.png");
         this.setState({players:[]});
-        this.setState({ball: new Ball(1360/2, 916/2)});
+        this.setState({ball: new Ball(1360/2, 916/2, 0)});
     };
 
     draw = p5 => {
@@ -326,7 +360,7 @@ export default class P5FreeSketch extends Component {
     guardiolaZones(p5){
         if(this.show_guardiola){
             p5.strokeWeight(3);
-            p5.stroke("#000000")
+            p5.stroke("#00009933")
             let padding = 45;
             p5.line(padding, 354, this.width-padding, 354);
             p5.line(padding, 574, this.width-padding, 574);

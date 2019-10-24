@@ -20,7 +20,9 @@ export default class App extends React.Component {
             has_meta_file:false,
             freehand: false,
             sidebar: {},
-            sketch: {}
+            sketch: {},
+            paused: null,
+            newframe: false
         };
 
         this.openFreeHandSketch = this.openFreeHandSketch.bind(this);
@@ -37,6 +39,13 @@ export default class App extends React.Component {
     handleChange = (frameData) => {
         let parsed = JSON.parse(frameData);
         this.setState({current_frame:parsed,status:parsed.ball.status,possession:parsed.ball.possession});
+    };
+
+    handlePause = (paused, newframe=false) => {
+        this.setState({paused:paused})
+        if(newframe){
+            this.setState({newframe:newframe})
+        }
     };
 
     handleMeta = (metaData) => {
@@ -67,7 +76,7 @@ export default class App extends React.Component {
                 {this.state.freehand ? (
                 <div className='header-contents freehand-sketch'>
                     <SideBar freehand={true} callback={this.handleSidebarStates} sketchStates={this.state.sketch}></SideBar>
-                    <P5FreeSketch sidebarStates={this.state.sidebar} callback={this.handleSketchChanges}/>
+                    <P5FreeSketch possession={this.state.possession} sidebarStates={this.state.sidebar} callback={this.handleSketchChanges}/>
                 </div>
                 ) : (
                     <div>
@@ -75,15 +84,18 @@ export default class App extends React.Component {
                         <ReactFileDrop callback={this.handleFileUploaded} freehandSketch={this.openFreeHandSketch}></ReactFileDrop>
                     ) : (
                         <div className='header-contents'>
-                            <DataHandler callback={this.handleChange} metaCallback={this.handleMeta} />
+                            <DataHandler callback={this.handleChange} metaCallback={this.handleMeta} pauseCallback={this.handlePause}/>
                             {this.state.meta_data !== null &&
                                 <div>
                                     <SideBar freehand={false} callback={this.handleSidebarStates} sketchStates={this.state.sketch}></SideBar>
-                                    <P5Sketch sidebarStates={this.state.sidebar} callback={this.handleSketchChanges} current_frame={this.state.current_frame}></P5Sketch>
+                                    <P5Sketch sidebarStates={this.state.sidebar} callback={this.handleSketchChanges} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
                                 </div>
                             }
                             <div className="match-details">
                                 <h2>Details:</h2>
+                                {this.state.current_frame &&
+                                    <p>TimeFrame: {this.state.current_frame.timestamp}</p>
+                                }
                                 <p>Status: {this.state.status}</p>
                                 <p>Possession: {this.state.possession}</p>
                             </div>
