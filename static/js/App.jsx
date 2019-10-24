@@ -3,6 +3,7 @@ import DataHandler from "./DataHandler";
 import P5Sketch from './sketch.js';
 import P5FreeSketch from './sketchFree.js';
 import ReactFileDrop from "./FileDrop";
+import {B4, SETAWAY, SETHOME} from "./Constants";
 require('../css/fullstack.css');
 
 export default class App extends React.Component {
@@ -19,7 +20,13 @@ export default class App extends React.Component {
             has_meta_file:false,
             freehand: false,
             paused: null,
-            newframe: false
+            newframe: false,
+            ball_action: null,
+            actions: {
+                b4: 0,
+                set_away: 0,
+                set_home: 0
+            }
         };
 
         this.openFreeHandSketch = this.openFreeHandSketch.bind(this);
@@ -27,6 +34,22 @@ export default class App extends React.Component {
 
     handleChange = (frameData) => {
         let parsed = JSON.parse(frameData);
+        if(parsed.ball.hasOwnProperty("action")){
+            switch(parsed.ball.action){
+                case B4:
+                    this.state.actions.b4++;
+                    console.log("GOOOAAAAAAALLL!!!!!!    Maybe");
+                case SETAWAY:
+                    this.state.actions.set_away++;
+                    console.log("SetAway");
+                case SETHOME:
+                    this.state.actions.set_home++;
+                    console.log("SetHome");
+                default:
+                    console.log("do nothin")
+            }
+            this.setState({ball_action: parsed.ball.action});
+        }
         this.setState({current_frame:parsed,status:parsed.ball.status,possession:parsed.ball.possession});
     };
 
@@ -85,6 +108,12 @@ export default class App extends React.Component {
                                 }
                                 <p>Status: {this.state.status}</p>
                                 <p>Possession: {this.state.possession}</p>
+                                {this.state.ball_action !== null &&
+                                    <p>Action: {this.state.ball_action}</p>
+                                }
+                                <p>B4: {this.state.actions.b4}</p>
+                                <p>SetAway: {this.state.actions.set_away}</p>
+                                <p>SetHome: {this.state.actions.set_home}</p>
                             </div>
                         </div>
                     )}

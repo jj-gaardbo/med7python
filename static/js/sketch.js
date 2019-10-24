@@ -123,7 +123,9 @@ export default class P5Sketch extends Component {
         this.state.paused = this.props.paused[0];
         if(this.props.paused[1] && !this.state.edited){
             this.updatePlayers(this.props.current_frame.players,true);
-            this.props.paused[1] = false
+            this.props.paused[1] = false;
+            this.state.ball.trail = [];
+            this.state.ball.edited = false;
         }
 
         this.state.points = [];
@@ -231,7 +233,7 @@ export default class P5Sketch extends Component {
         }
 
         if(this.state.ball !== null){
-            this.state.ball.display(p5);
+            this.state.ball.display(p5, this.show_trail, this.state.paused, this.state.edited);
         }
 
         this.updatePoints();

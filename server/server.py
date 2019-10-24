@@ -94,6 +94,8 @@ class Player:
         coords = scale_coords(player_data[3], player_data[4])
         self.x_pos = coords[0]
         self.y_pos = coords[1]
+        self.orig_coords_x = player_data[3]
+        self.orig_coords_y = player_data[4]
 
 
 class Ball:
@@ -107,7 +109,7 @@ class Ball:
         self.possession = ball[4]
         self.status = ball[5]
         if len(ball) == 7:
-            self.has_action = False
+            self.has_action = True
             self.action = ball[6]
         else:
             self.has_action = False
