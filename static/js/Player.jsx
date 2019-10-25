@@ -1,9 +1,12 @@
+import {AWAY, HOME} from "./Constants";
+
+const allEqual = arr => arr.every( v => v === arr[0] );
+
 export default class Player {
     constructor(x, y, team, id){
         this.x = x;
         this.y = y;
         this.r = 20;
-        this.originalTeam = team;
         this.team = team;
         this.id = id;
         this.is_clicked = false;
@@ -11,9 +14,18 @@ export default class Player {
         this.is_pressed = false;
         this.edited = false;
         this.trail = [];
+        this.exclude = false;
+    }
+
+    checkMovement(){
+        if(this.trail.length > 0 && allEqual(this.trail)){
+            this.exclude = true;
+        }
     }
 
     display = function(p5, trails=null, paused=false){
+        if(this.exclude){ return; }
+
         if(!paused){
             this.trail.push(p5.createVector(this.x, this.y));
             if(this.trail.length >= 20) this.trail.shift();
@@ -26,10 +38,15 @@ export default class Player {
         }
         p5.strokeWeight(1);
         p5.stroke(255);
-        if(this.team === "H"){
+        if(this.team === HOME){
             p5.fill("blue")
-        } else {
+        }
+        else if(this.team === AWAY){
             p5.fill("red")
+        }
+        else {
+            p5.noStroke();
+            p5.fill("#00000011")
         }
         p5.ellipse(this.x, this.y, this.r, this.r);
 

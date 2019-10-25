@@ -5,6 +5,7 @@ import SideBar from "./SideBar";
 import Player from "./Player"
 import Ball from "./Ball"
 import {HOME, AWAY} from "./Constants"
+import KeyboardEventHandler from 'react-keyboard-event-handler';
 
 let delaunay = null;
 let delaunay_h = null;
@@ -12,12 +13,6 @@ let delaunay_a = null;
 let voronoi = null;
 let voronoi_h = null;
 let voronoi_a = null;
-
-let initialHomeTeam = [];
-let initialAwayTeam = [];
-
-let homeTeam = [];
-let awayTeam = [];
 
 export default class P5Sketch extends Component {
     bg;
@@ -33,6 +28,14 @@ export default class P5Sketch extends Component {
     width = 1360;
     height = 916;
     show_trail = false;
+    first_period_start = 0;
+    first_period_end = 0;
+    second_period_start = 0;
+    second_period_end = 0;
+    third_period_start = 0;
+    third_period_end = 0;
+    fourth_period_start = 0;
+    fourth_period_end = 0;
 
 
     constructor(props){
@@ -43,11 +46,14 @@ export default class P5Sketch extends Component {
             edited: false,
             ball:null,
             data: [],
+            meta_data: null,
             delaunay: null,
             points: [],
             points_h: [],
             points_a: [],
             voronoi: null,
+            timestamp: 0,
+            period:0
         }
     }
 
@@ -62,13 +68,6 @@ export default class P5Sketch extends Component {
     setupPlayers(players){
         for(let i = 0; i < players.length; i++){
             this.state.players.push(new Player(players[i].x_pos, players[i].y_pos, players[i].team, players[i].tag_id));
-            if(players[i].team === HOME){
-                initialHomeTeam.push(parseInt(players[i].tag_id));
-                homeTeam.push(parseInt(players[i].tag_id));
-            } else {
-                initialAwayTeam.push(parseInt(players[i].tag_id));
-                awayTeam.push(parseInt(players[i].tag_id));
-            }
         }
     }
 
@@ -81,21 +80,13 @@ export default class P5Sketch extends Component {
         return null;
     }
 
-    changeInHomeTeam(){
-        console.log("Change In HOME team", initialHomeTeam, homeTeam);
-    }
-
-    changeInAwayTeam(){
-        console.log("Change In AWAY team", initialAwayTeam, awayTeam);
-    }
-
     updatePlayers(newFramePlayers, clearTrails = false){
         for(let i = 0; i < newFramePlayers.length; i++){
-            let id = parseInt(newFramePlayers[i].tag_id);
             let searchResult = this.search(newFramePlayers[i].tag_id, this.state.players);
             if(searchResult !== null){
                 this.state.players[searchResult.index].x = newFramePlayers[i].x_pos;
                 this.state.players[searchResult.index].y = newFramePlayers[i].y_pos;
+                this.state.players[searchResult.index].team = newFramePlayers[i].team;
             }
         }
         if(clearTrails){
@@ -106,8 +97,23 @@ export default class P5Sketch extends Component {
         }
     }
 
+    check_timestamp(){
+        if(this.state.timestamp > this.first_period_start && this.state.timestamp < this.first_period_end){
+            this.state.period = 1;
+        } else if(this.state.timestamp > this.second_period_start && this.state.timestamp < this.second_period_end){
+            this.state.period = 2;
+        } else if(this.state.timestamp > this.third_period_start && this.state.timestamp < this.third_period_end){
+            this.state.period = 3;
+        } else if(this.state.timestamp > this.fourth_period_start && this.state.timestamp < this.fourth_period_end){
+            this.state.period = 4;
+        }
+    }
+
     updatePoints(){
         if(this.props.current_frame === null || this.props.current_frame.length === 0){return;}
+
+        this.state.timestamp = parseInt(this.props.current_frame.timestamp);
+        this.check_timestamp();
 
         if(!this.state.paused){
             this.state.edited = false;
@@ -132,6 +138,7 @@ export default class P5Sketch extends Component {
         this.state.points_h = [];
         this.state.points_a = [];
         for(let i = 0; i < this.state.players.length; i++){
+            if(this.state.players[i].team !== HOME && this.state.players[i].team !== AWAY){continue;}
             let position = [this.state.players[i].x, this.state.players[i].y];
             if(position[0] > (1360-47) || position[0] < (47) || position[1] > (916-47) || position[1] < (0+47)){
                 continue;
@@ -139,7 +146,7 @@ export default class P5Sketch extends Component {
 
             if(this.state.players[i].team === HOME){
                 this.state.points_h.push(position);
-            } else {
+            } else if(this.state.players[i].team === AWAY) {
                 this.state.points_a.push(position);
             }
             this.state.points.push(position);
@@ -216,9 +223,20 @@ export default class P5Sketch extends Component {
     };
 
     setup = (p5, canvasParentRef) => {
+        let self = this;
         this.canvas = p5.createCanvas(1360, 916).parent(canvasParentRef);
         this.bg = p5.loadImage("dist/6ce1c9bce4091f1e0a741dea7c4d2564.png");
-        this.setState({ball: new Ball(1360/2, 916/2, 0)});
+        this.setState({ball: new Ball(1360/2, 916/2, 0), meta_data:this.props.meta_data}, function(){
+            let periods = this.state.meta_data.periods;
+            self.first_period_start = parseInt(periods['1'].start_frame);
+            self.first_period_end = parseInt(periods['1'].end_frame);
+            self.second_period_start = parseInt(periods['2'].start_frame);
+            self.second_period_end = parseInt(periods['2'].end_frame);
+            self.third_period_start = parseInt(periods['3'].start_frame);
+            self.third_period_end = parseInt(periods['3'].end_frame);
+            self.fourth_period_start = parseInt(periods['4'].start_frame);
+            self.fourth_period_end = parseInt(periods['4'].end_frame);
+        });
     };
 
     draw = p5 => {
@@ -333,6 +351,31 @@ export default class P5Sketch extends Component {
             <div>
                 <SideBar freehand={false} callback={this.handleSidebarStates} sketchStates={this.state} />
                 <Sketch setup={this.setup} draw={this.draw} mouseClicked={this.mouseClicked} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} mouseReleased={this.mouseReleased}/>
+                <KeyboardEventHandler
+                    handleKeys={['v','c','h','a','g','t']}
+                    onKeyEvent={(key, e) => {{
+                        switch(key){
+                            case 'v':
+                                this.show_voronoi = !this.show_voronoi
+                                return;
+                            case 'c':
+                                this.show_convex_hull = !this.show_convex_hull
+                                return;
+                            case 'h':
+                                this.show_convex_hull_h = !this.show_convex_hull_h
+                                return;
+                            case 'a':
+                                this.show_convex_hull_a = !this.show_convex_hull_a
+                                return;
+                            case 'g':
+                                this.show_guardiola = !this.show_guardiola
+                                return;
+                            case 't':
+                                this.show_trail = !this.show_trail
+                                return;
+                        }
+                    }}
+                    } />
             </div>
         );
     }

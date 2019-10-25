@@ -28,9 +28,6 @@ buffer = 40
 frames = []
 current_frame = -1
 
-h_team = []
-a_team = []
-
 data_file = ""
 meta_file = ""
 
@@ -40,15 +37,6 @@ meta_data = []
 
 def scale_coords(x, y):
     return (w / 2 + (int(x) * 0.12)), (h / 2 + (-int(y) * 0.12))
-
-
-def add_to_team(identifyer, tag_id):
-    if identifyer == "H":
-        h_team.append(int(tag_id))
-        return "H"
-    else:
-        a_team.append(int(tag_id))
-        return "A"
 
 
 def check_possession():
@@ -64,24 +52,14 @@ def calculate_distance(x1, y1, x2, y2):
 
 
 def get_start_frame(period_no):
-    return meta_data.periods[str(period_no)]["start_frame"];
+    return meta_data.periods[str(period_no)]["start_frame"]
 
 
-def handle_teams(tag_id, x, y):
-    if int(tag_id) in h_team:
+def handle_teams(team_id):
+    if team_id == 1:
         return 'H'
-    elif int(tag_id) in a_team:
+    elif team_id == 0:
         return 'A'
-    elif int(tag_id) not in h_team or tag_id not in a_team:
-        dist = calculate_distance(x, y, current_frame.ball.x_pos, current_frame.ball.y_pos)
-        if dist < buffer:
-            return add_to_team(check_possession(), tag_id)
-        elif abs(x) < buffer and abs(y) < buffer:
-            return add_to_team(check_possession(), tag_id)
-        elif x < 0:
-            return add_to_team("H", tag_id)
-        else:
-            return add_to_team("A", tag_id)
     else:
         return ''
 
@@ -89,8 +67,9 @@ def handle_teams(tag_id, x, y):
 class Player:
     def __init__(self, player_data):
         player_data = player_data.split(',')
+        self.team_id = int(player_data[0])
         self.tag_id = player_data[1]
-        self.team = handle_teams(self.tag_id, int(player_data[3]), int(player_data[4]))
+        self.team = handle_teams(self.team_id)
         coords = scale_coords(player_data[3], player_data[4])
         self.x_pos = coords[0]
         self.y_pos = coords[1]

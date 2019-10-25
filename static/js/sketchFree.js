@@ -5,6 +5,7 @@ import SideBar from "./SideBar";
 import Player from "./Player"
 import Ball from "./Ball"
 import {HOME, AWAY} from "./Constants"
+import KeyboardEventHandler from "react-keyboard-event-handler";
 
 let delaunay = null;
 let delaunay_h = null;
@@ -269,6 +270,31 @@ export default class P5FreeSketch extends Component {
             <div>
                 <SideBar freehand={true} callback={this.handleSidebarStates} sketchStates={this.state} />
                 <Sketch setup={this.setup} draw={this.draw} mouseClicked={this.mouseClicked} mouseReleased={this.mouseReleased} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} />
+                <KeyboardEventHandler
+                    handleKeys={['v','c','h','a','g','p']}
+                    onKeyEvent={(key, e) => {{
+                        switch(key){
+                            case 'v':
+                                this.show_voronoi = !this.show_voronoi
+                                return;
+                            case 'c':
+                                this.show_convex_hull = !this.show_convex_hull
+                                return;
+                            case 'h':
+                                this.show_convex_hull_h = !this.show_convex_hull_h
+                                return;
+                            case 'a':
+                                this.show_convex_hull_a = !this.show_convex_hull_a
+                                return;
+                            case 'g':
+                                this.show_guardiola = !this.show_guardiola
+                                return;
+                            case 'p':
+                                this.state.placePlayers = !this.state.placePlayers
+                                return;
+                        }
+                    }}
+                    } />
             </div>
         );
     }

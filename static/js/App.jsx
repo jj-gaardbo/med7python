@@ -38,15 +38,10 @@ export default class App extends React.Component {
             switch(parsed.ball.action){
                 case B4:
                     this.state.actions.b4++;
-                    console.log("GOOOAAAAAAALLL!!!!!!    Maybe");
                 case SETAWAY:
                     this.state.actions.set_away++;
-                    console.log("SetAway");
                 case SETHOME:
                     this.state.actions.set_home++;
-                    console.log("SetHome");
-                default:
-                    console.log("do nothin")
             }
             this.setState({ball_action: parsed.ball.action});
         }
@@ -98,7 +93,7 @@ export default class App extends React.Component {
                             <DataHandler callback={this.handleChange} metaCallback={this.handleMeta} pauseCallback={this.handlePause}/>
                             {this.state.meta_data !== null &&
                                 <div>
-                                    <P5Sketch current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
+                                    <P5Sketch meta_data={this.state.meta_data} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
                                 </div>
                             }
                             <div className="match-details">

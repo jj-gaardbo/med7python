@@ -96,38 +96,38 @@ export default class SideBar extends React.Component {
                 {this.state.freehand ? (
                     <button className={"btn btn-block menu btn-secondary"} onClick={ this.placePlayers }>
                         <i className="fa fa-user"></i>
-                        Place players
+                        Place players (P)
                     </button>
                 ) : (
                     <button className={"btn btn-block menu "+ (this.state.show_trail ? "btn-primary":"btn-secondary")} onClick={ this.toggleTrail }>
-                        <i className="fa fa-user"></i>
-                        Show trails
+                        <i className="fas fa-wave-square"></i>
+                        Trails (T)
                     </button>
                 )}
 
                 <button className={"btn btn-block menu "+ (this.state.show_voronoi ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoi }>
-                    <i className="fa fa-user"></i>
-                    Show voronoi
+                    <i className="fas fa-gem"></i>
+                    Voronoi (V)
                 </button>
 
                 <button className={"btn btn-block menu "+ (this.state.show_convex ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvex }>
-                    <i className="fa fa-user"></i>
-                    Show Convex hull
+                    <i className="fas fa-draw-polygon"></i>
+                    Convex hull (C)
                 </button>
 
                 <button className={"btn btn-block menu "+ (this.state.show_convexH ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvexH }>
-                    <i className="fa fa-user"></i>
-                    Show Convex hull (Home)
+                    <i className="fas fa-draw-polygon"></i>
+                    (Home) Convex hull (H)
                 </button>
 
                 <button className={"btn btn-block menu "+ (this.state.show_convexA ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvexA }>
-                    <i className="fa fa-user"></i>
-                    Show Convex hull (Away)
+                    <i className="fas fa-draw-polygon"></i>
+                    (Away) Convex hull (A)
                 </button>
 
                 <button className={"btn btn-block menu "+ (this.state.show_guardiola ? "btn-primary":"btn-secondary")} onClick={ this.toggleGuardiola }>
-                    <i className="fa fa-user"></i>
-                    Show Guardiola Zones
+                    <i className="fas fa-th"></i>
+                    Guardiola Zones (G)
                 </button>
 
             </Menu>

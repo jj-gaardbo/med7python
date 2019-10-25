@@ -1,4 +1,5 @@
 import React from "react";
+import KeyboardEventHandler from 'react-keyboard-event-handler';
 
 let $ = require('jquery');
 
@@ -109,6 +110,9 @@ export default class DataHandler extends React.Component {
                 <div className="button-outer" onClick={this.pause}>
                     <div className="pause-button"></div>
                 </div>
+                <KeyboardEventHandler
+                    handleKeys={['space']}
+                    onKeyEvent={(key, e) => this.state.paused ? this.play() : this.pause()} />
             </div>
         )
     }
