@@ -21,6 +21,8 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
 
+progress_str = ""
+
 w = 1360
 h = 916
 buffer = 40
@@ -33,6 +35,7 @@ meta_file = ""
 
 data = []
 meta_data = []
+meta_data_obj = None
 
 
 def scale_coords(x, y):
@@ -123,14 +126,38 @@ class MetaData:
             period_frames = {"start_frame": periods[i].attributes["iStartFrame"].value, "end_frame": periods[i].attributes["iEndFrame"].value}
             self.periods[periods[i].attributes["iId"].value] = period_frames
 
+    def get_periods(self):
+        return [int(self.periods['1']['start_frame']), int(self.periods['1']['end_frame']),
+               int(self.periods['2']['start_frame']), int(self.periods['2']['end_frame']),
+               int(self.periods['3']['start_frame']), int(self.periods['3']['end_frame']),
+               int(self.periods['4']['start_frame']), int(self.periods['4']['end_frame'])]
+
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__,sort_keys=True, indent=4)
 
 
+def in_periods(timestamp):
+    periods = meta_data_obj.get_periods()
+    if int(timestamp) < periods[0] != 0:
+        return False
+    elif periods[1] != 0 < int(timestamp) < periods[2] != 0:
+        return False
+    elif periods[3] != 0 < int(timestamp) < periods[4] != 0:
+        return False
+    elif periods[5] != 0 < int(timestamp) < periods[6] != 0:
+        return False
+    elif int(timestamp) > periods[7] != 0:
+        return False
+    else:
+        return True
+
+
 def clean_data(data, callback=None):
-    global current_frame
+    global current_frame, meta_data_obj, progress_str
     for i in range(len(data)):
         temp = re.split('[:]', data[i][0])
+        if not (None is meta_data_obj) and not in_periods(temp[0]):
+            continue
         del data[i][0]
         data[i].insert(0, temp[0])
         data[i].insert(1, temp[1])
@@ -143,7 +170,8 @@ def clean_data(data, callback=None):
         frame.set_players(data[i])
         frames.append(frame.toJSON())
 
-        print('\r', "Processing: "+str(i)+" / "+str(len(data))+" - "+str(round(i/len(data)*100))+"%", end='')
+        progress_str = "Processing: "+str(i)+" / "+str(len(data))+" - "+str(round(i/len(data)*100))+"%"
+        print('\r', progress_str, end='')
     if callback:
         callback()
 
@@ -183,6 +211,11 @@ def data():
 @app.route("/meta")
 def meta():
     return jsonify(meta_data)
+
+
+@app.route("/progress")
+def progress():
+    return progress_str
 
 
 @app.route("/upload_file", methods=['POST'])
@@ -227,11 +260,12 @@ def run_app():
 
 
 def handle_meta_data(filename):
-    global meta_data
+    global meta_data, meta_data_obj
     meta_doc = minidom.parse(filename)
     match = meta_doc.getElementsByTagName("match")
     meta = MetaData(match[0].attributes["iId"].value, match[0].attributes["dtDate"].value)
     meta.set_periods(meta_doc.getElementsByTagName("period"))
+    meta_data_obj = meta
     meta_data = meta.toJSON()
 
 
