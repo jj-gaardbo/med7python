@@ -132,6 +132,15 @@ canvas{
     cursor: pointer;
 }
 
+span.time{
+    color: #000000;
+    font-size: 1.2em;
+    font-weight: 600;
+    right: 20px;
+    display: block;
+    position: absolute;
+}
+
 .file-processing progress{
     bottom: 0;
     height: 40px;

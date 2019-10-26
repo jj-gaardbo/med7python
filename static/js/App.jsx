@@ -22,6 +22,7 @@ export default class App extends React.Component {
             paused: null,
             newframe: false,
             ball_action: null,
+            time: 0,
             actions: {
                 b4: 0,
                 set_away: 0,
@@ -45,7 +46,7 @@ export default class App extends React.Component {
             }
             this.setState({ball_action: parsed.ball.action});
         }
-        this.setState({current_frame:parsed,status:parsed.ball.status,possession:parsed.ball.possession});
+        this.setState({current_frame:parsed,status:parsed.ball.status,possession:parsed.ball.possession, time:parsed.time});
     };
 
     handlePause = (paused, newframe=false) => {
@@ -96,6 +97,9 @@ export default class App extends React.Component {
                             <DataHandler callback={this.handleChange} metaCallback={this.handleMeta} pauseCallback={this.handlePause}/>
                             {this.state.meta_data !== null &&
                                 <div>
+                                    <span className={"time"}>
+                                        {this.state.time}
+                                    </span>
                                     <P5Sketch meta_data={this.state.meta_data} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
                                 </div>
                             }

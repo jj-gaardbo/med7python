@@ -13,6 +13,7 @@ from flask import Flask, request, render_template, jsonify, flash, redirect, url
 import webbrowser
 from threading import Timer
 from dateutil.parser import parse
+import datetime
 
 UPLOAD_FOLDER = './uploads'
 ALLOWED_EXTENSIONS = {'dat', 'xml'}
@@ -106,6 +107,8 @@ class DataStruct():
         self.timestamp = timestamp
         self.ball = ball
         self.players = []
+        self.time = 0,
+        self.period = 0
 
     def set_players(self, players):
         for i in range(len(players)):
@@ -113,6 +116,10 @@ class DataStruct():
 
     def set_ball(self):
         self.ball = Ball(self.ball)
+
+    def set_time(self, second, period):
+        self.period = period
+        self.time = str(datetime.timedelta(seconds=second))
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__,sort_keys=True, indent=4)
@@ -149,29 +156,41 @@ def in_periods(timestamp):
     periods = meta_data_obj.get_periods()
 
     if (periods[0] != 0) and (periods[1] != 0) and periods[0] <= int(timestamp) <= periods[1]:
-        return True
+        return True, periods[0], 1
     elif (periods[2] != 0) and (periods[3] != 0) and periods[2] <= int(timestamp) <= periods[3]:
-        return True
+        return True, periods[2], 2
     elif (periods[4] != 0) and (periods[5] != 0) and periods[4] <= int(timestamp) <= periods[5]:
-        return True
+        return True, periods[4], 3
     elif (periods[6] != 0) and (periods[7] != 0) and periods[6] <= int(timestamp) <= periods[7]:
-        return True
+        return True, periods[6], 4
 
-    return False
+    return False, -1, -1
 
 
 def clean_data(data, callback=None):
     global current_frame, meta_data_obj, progress_str, meta_data, progress_percentage
     iter = 0
+    seconds = 0
+    # 2700 second = 45 minutes
     for i in range(len(data)):
         temp = re.split('[:]', data[i][0])
-        if not (None is meta_data_obj) and not in_periods(temp[0]):
+        in_period, period_start_no, period_no = in_periods(temp[0])
+        if not (None is meta_data_obj) and not in_period:
             continue
         del data[i][0]
         data[i].insert(0, temp[0])
         data[i].insert(1, temp[1])
         del data[i][len(data[i]) - 1]
         frame = DataStruct(iter, data[i][0], data[i][len(data[i])-1])
+        if period_no == 2 and int(period_start_no) == int(temp[0]):
+            seconds = 2700
+        elif period_no == 3 and int(period_start_no) == int(temp[0]):
+            seconds = 5400
+        elif period_no == 4 and int(period_start_no) == int(temp[0]):
+            seconds = 6300
+        if iter % 25 == 0:
+            seconds = seconds+1
+        frame.set_time(seconds, period_no)
         del data[i][0]
         del data[i][len(data[i]) - 1]
         frame.set_ball()

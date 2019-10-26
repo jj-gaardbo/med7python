@@ -19,7 +19,7 @@ export default class DataHandler extends React.Component {
             timeout: 39,
             skip_frames: 1,
             meta: null,
-            period_pos: "",
+            period_pos: ""
         };    // This binding is necessary to make `this` work in the callback
 
         this.getPythonData = this.getPythonData.bind(this);
