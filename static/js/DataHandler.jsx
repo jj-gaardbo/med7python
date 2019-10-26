@@ -18,7 +18,8 @@ export default class DataHandler extends React.Component {
             intervalID: 0,
             timeout: 39,
             skip_frames: 1,
-            meta: null
+            meta: null,
+            period_pos: ""
         };    // This binding is necessary to make `this` work in the callback
 
         this.getPythonData = this.getPythonData.bind(this);
@@ -28,6 +29,8 @@ export default class DataHandler extends React.Component {
 
         this.play = this.play.bind(this);
         this.pause = this.pause.bind(this);
+
+        this.placePeriods = this.placePeriods.bind(this);
     }
 
     _onMouseMove(e) {
@@ -93,6 +96,27 @@ export default class DataHandler extends React.Component {
         this.props.pauseCallback(true);
     }
 
+    placePeriods(){
+        if(this.state.dataLength === 0 || this.state.meta === null){return;}
+        let DOM = [];
+        let width = $(".progress-bar").width();
+        let start_frames = this.state.meta.start_periods;
+        for(let i = 0; i < start_frames.length; i++){
+            let style;
+            if(start_frames[i] === 0){
+                style = {
+                    left: 0
+                };
+            } else {
+                style = {
+                    left: start_frames[i]/this.state.dataLength*width
+                };
+            }
+            DOM.push(<span key={i} className={'period-indicator'} style={style}>{i+1}</span>);
+        }
+        return DOM;
+    }
+
     componentDidMount() {
         this.getPythonMetaData()
     }
@@ -103,6 +127,7 @@ export default class DataHandler extends React.Component {
             <div className={"timeline-controls"}>
                 <div className="progress-bar" onClick={this.getTimeFrame} onMouseMove={this._onMouseMove.bind(this)} ref={(div) => {progressBar = div}}>
                     <div className="progress-indicator" style={{width: `${this.getProgress()}%`}}/>
+                    {this.placePeriods()}
                 </div>
                 <div className="button-outer" onClick={this.play}>
                     <div className="play-button"></div>

@@ -120,6 +120,12 @@ class MetaData:
         self.match_id = match_id
         self.date = date
         self.periods = {}
+        self.start_periods = []
+
+    def place_start_periods(self, timestamp, iterator):
+        periods = self.get_periods()
+        if int(timestamp) == int(periods[0]) or int(timestamp) == int(periods[2]) or int(timestamp) == int(periods[4]) or int(timestamp) == int(periods[6]):
+            self.start_periods.append(iterator)
 
     def set_periods(self, periods):
         for i in range(len(periods)):
@@ -138,22 +144,22 @@ class MetaData:
 
 def in_periods(timestamp):
     periods = meta_data_obj.get_periods()
-    if int(timestamp) < periods[0] != 0:
-        return False
-    elif periods[1] != 0 < int(timestamp) < periods[2] != 0:
-        return False
-    elif periods[3] != 0 < int(timestamp) < periods[4] != 0:
-        return False
-    elif periods[5] != 0 < int(timestamp) < periods[6] != 0:
-        return False
-    elif int(timestamp) > periods[7] != 0:
-        return False
-    else:
+
+    if (periods[0] != 0) and (periods[1] != 0) and periods[0] <= int(timestamp) <= periods[1]:
         return True
+    elif (periods[2] != 0) and (periods[3] != 0) and periods[2] <= int(timestamp) <= periods[3]:
+        return True
+    elif (periods[4] != 0) and (periods[5] != 0) and periods[4] <= int(timestamp) <= periods[5]:
+        return True
+    elif (periods[6] != 0) and (periods[7] != 0) and periods[6] <= int(timestamp) <= periods[7]:
+        return True
+
+    return False
 
 
 def clean_data(data, callback=None):
-    global current_frame, meta_data_obj, progress_str
+    global current_frame, meta_data_obj, progress_str, meta_data
+    iter = 0
     for i in range(len(data)):
         temp = re.split('[:]', data[i][0])
         if not (None is meta_data_obj) and not in_periods(temp[0]):
@@ -168,8 +174,9 @@ def clean_data(data, callback=None):
         frame.set_ball()
         current_frame = frame
         frame.set_players(data[i])
+        meta_data_obj.place_start_periods(int(current_frame.timestamp), iter)
         frames.append(frame.toJSON())
-
+        iter = iter+1
         progress_str = "Processing: "+str(i)+" / "+str(len(data))+" - "+str(round(i/len(data)*100))+"%"
         print('\r', progress_str, end='')
     if callback:
@@ -259,6 +266,11 @@ def run_app():
     app.run()
 
 
+def update_meta():
+    global meta_data, meta_data_obj
+    meta_data = meta_data_obj.toJSON()
+
+
 def handle_meta_data(filename):
     global meta_data, meta_data_obj
     meta_doc = minidom.parse(filename)
@@ -271,7 +283,7 @@ def handle_meta_data(filename):
 
 def process_data(filename):
     data = [i.strip().split(';') for i in open(filename).readlines()]
-    clean_data(data)
+    clean_data(data, update_meta)
 
 
 if __name__ == "__main__":

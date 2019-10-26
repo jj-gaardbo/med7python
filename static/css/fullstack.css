@@ -130,6 +130,26 @@ canvas{
     cursor: pointer;
 }
 
+.period-indicator{
+    display: block;
+    position: absolute;
+    color: #000000;
+    box-sizing: border-box;
+    padding: 0 0 0 10px;
+    top: 0;
+    height: 100%;
+}
+
+.period-indicator::before{
+    content: "";
+    width: 2px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: #000000;
+    height: 100%;
+}
+
 .progress-indicator{
     background-color: #001D91;
     position: absolute;
