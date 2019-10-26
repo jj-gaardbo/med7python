@@ -19,13 +19,15 @@ export default class DataHandler extends React.Component {
             timeout: 39,
             skip_frames: 1,
             meta: null,
-            period_pos: ""
+            period_pos: "",
         };    // This binding is necessary to make `this` work in the callback
 
         this.getPythonData = this.getPythonData.bind(this);
         this.getPythonDataSize = this.getPythonDataSize.bind(this);
         this.getTimeFrame = this.getTimeFrame.bind(this);
+        this.getTimeFrameFwdRew = this.getTimeFrameFwdRew.bind(this);
         this.getPythonMetaData = this.getPythonMetaData.bind(this);
+        this.getProgress = this.getProgress.bind(this);
 
         this.play = this.play.bind(this);
         this.pause = this.pause.bind(this);
@@ -40,15 +42,31 @@ export default class DataHandler extends React.Component {
 
     getTimeFrame(){
         let self = this;
-        let frame = Math.round(this.state.dataLength / 100 * this.state.percentage);
-        $.get(window.location.href + 'data?frame='+frame, (data) => {
+        let frameToFind = Math.round(this.state.dataLength / 100 * this.state.percentage);
+
+        $.get(window.location.href + 'data?frame='+frameToFind, (data) => {
             this.setState({data: data});
             this.props.callback(data);
             if(this.state.paused){
                 this.props.pauseCallback(true, true);
             }
         }).done(function() {
-            self.setState({frame: frame+self.state.skip_frames});
+            self.setState({frame: frameToFind+self.state.skip_frames});
+        });
+    }
+
+    getTimeFrameFwdRew(frame = 0){
+        let self = this;
+        let frameToFind = frame;
+
+        $.get(window.location.href + 'data?frame='+frameToFind, (data) => {
+            this.setState({data: data});
+            this.props.callback(data);
+            if(this.state.paused){
+                this.props.pauseCallback(true, true);
+            }
+        }).done(function() {
+            self.setState({frame: frameToFind+self.state.skip_frames});
         });
     }
 
@@ -82,6 +100,22 @@ export default class DataHandler extends React.Component {
             this.getPythonDataSize();
         }
         return this.state.frame / this.state.dataLength * 100;
+    }
+
+    forward(){
+        if((this.state.frame + 750) < this.state.dataLength-1){
+            this.state.frame += 750;
+            this.getTimeFrameFwdRew(this.state.frame);
+        }
+    }
+
+    backward(){
+        if(this.state.frame > 750){
+            this.state.frame -= 750;
+            this.getTimeFrameFwdRew(this.state.frame);
+        } else {
+            this.getTimeFrameFwdRew(0);
+        }
     }
 
     play(){
@@ -136,8 +170,21 @@ export default class DataHandler extends React.Component {
                     <div className="pause-button"></div>
                 </div>
                 <KeyboardEventHandler
-                    handleKeys={['space']}
-                    onKeyEvent={(key, e) => this.state.paused ? this.play() : this.pause()} />
+                    handleKeys={['space', 'left', 'right']}
+                    onKeyEvent={(key, e) => {{
+                        switch (key) {
+                            case 'space':
+                                this.state.paused ? this.play() : this.pause();
+                                return;
+                            case 'left':
+                                this.backward();
+                                return;
+                            case 'right':
+                                this.forward();
+                                return;
+                        }
+                        }}
+                    } />
             </div>
         )
     }

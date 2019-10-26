@@ -61,11 +61,14 @@ export default class App extends React.Component {
         }
     };
 
-    handleFileUploaded = (msg) => {
+    handleFileUploaded = (msg, timer = 0) => {
         if(msg === "xml"){
             this.setState({has_meta_file:true})
         } else if (msg === "dat"){
             this.setState({has_data_file:true})
+            if(timer !== 0){
+                clearInterval(timer);
+            }
         }
 
         if(this.state.has_meta_file && this.state.has_data_file){

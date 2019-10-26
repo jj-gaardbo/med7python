@@ -22,6 +22,7 @@ app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
 
 progress_str = ""
+progress_percentage = []
 
 w = 1360
 h = 916
@@ -99,7 +100,8 @@ class Ball:
 
 
 class DataStruct():
-    def __init__(self, timestamp, ball):
+    def __init__(self, index, timestamp, ball):
+        self.index = index
         self.timestamp = timestamp
         self.ball = ball
         self.players = []
@@ -158,7 +160,7 @@ def in_periods(timestamp):
 
 
 def clean_data(data, callback=None):
-    global current_frame, meta_data_obj, progress_str, meta_data
+    global current_frame, meta_data_obj, progress_str, meta_data, progress_percentage
     iter = 0
     for i in range(len(data)):
         temp = re.split('[:]', data[i][0])
@@ -168,7 +170,7 @@ def clean_data(data, callback=None):
         data[i].insert(0, temp[0])
         data[i].insert(1, temp[1])
         del data[i][len(data[i]) - 1]
-        frame = DataStruct(data[i][0], data[i][len(data[i])-1])
+        frame = DataStruct(iter, data[i][0], data[i][len(data[i])-1])
         del data[i][0]
         del data[i][len(data[i]) - 1]
         frame.set_ball()
@@ -178,7 +180,8 @@ def clean_data(data, callback=None):
         frames.append(frame.toJSON())
         iter = iter+1
         progress_str = "Processing: "+str(i)+" / "+str(len(data))+" - "+str(round(i/len(data)*100))+"%"
-        print('\r', progress_str, end='')
+        progress_percentage = [i, len(data), int(round(i/len(data)*100))]
+        #print('\r', progress_str, end='')
     if callback:
         callback()
 
@@ -222,7 +225,7 @@ def meta():
 
 @app.route("/progress")
 def progress():
-    return progress_str
+    return jsonify(progress_percentage)
 
 
 @app.route("/upload_file", methods=['POST'])
