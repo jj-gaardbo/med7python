@@ -15,6 +15,7 @@ export default class SideBar extends React.Component {
             show_convexA : false,
             show_cuardiola: false,
             show_trail:false,
+            show_dist:false
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -25,6 +26,7 @@ export default class SideBar extends React.Component {
         this.toggleConvexA = this.toggleConvexA.bind(this);
         this.toggleGuardiola = this.toggleGuardiola.bind(this);
         this.toggleTrail = this.toggleTrail.bind(this);
+        this.toggleDist = this.toggleDist.bind(this);
     }
 
     componentDidMount() {
@@ -33,7 +35,6 @@ export default class SideBar extends React.Component {
     }
 
     handleChange(){
-        console.log("CHANGE");
         this.props.callback(this.state);
     }
 
@@ -82,6 +83,11 @@ export default class SideBar extends React.Component {
         this.props.callback(this.state);
     }
 
+    toggleDist(){
+        this.state.show_dist = !this.state.show_dist;
+        this.props.callback(this.state);
+    }
+
     componentDidUpdate(prevProps, prevState, snapshot) {
         if(this.props.sketchStates.placePlayers === false){
             this.state.placePlayers = false;
@@ -94,16 +100,25 @@ export default class SideBar extends React.Component {
         return (
             <Menu isOpen={self.state.menuOpen} onChange={this.handleChange} onStateChange={(state) => this.handleStateChange(state)} pageWrapId={ "page-wrap" } outerContainerId={ "content" }>
                 {this.state.freehand ? (
-                    <button className={"btn btn-block menu btn-secondary"} onClick={ this.placePlayers }>
-                        <i className="fa fa-user"></i>
-                        Place players (P)
-                    </button>
+                    <div>
+
+                        <button className={"btn btn-block menu btn-secondary"} onClick={ this.placePlayers }>
+                            <i className="fa fa-user"></i>
+                            Place players (P)
+                        </button>
+
+                    </div>
                 ) : (
                     <button className={"btn btn-block menu "+ (this.state.show_trail ? "btn-primary":"btn-secondary")} onClick={ this.toggleTrail }>
                         <i className="fas fa-wave-square"></i>
                         Trails (T)
                     </button>
                 )}
+
+                <button className={"btn btn-block menu "+ (this.state.show_dist ? "btn-primary":"btn-secondary")} onClick={ this.toggleDist }>
+                    <i className="fas fa-th"></i>
+                    Distances
+                </button>
 
                 <button className={"btn btn-block menu "+ (this.state.show_voronoi ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoi }>
                     <i className="fas fa-gem"></i>

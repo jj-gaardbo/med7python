@@ -25,6 +25,7 @@ export default class P5Sketch extends Component {
     show_convex_hull_h = false;
     show_convex_hull_a = false;
     show_guardiola = false;
+    show_dist = false;
     width = 1360;
     height = 916;
     show_trail = false;
@@ -53,7 +54,8 @@ export default class P5Sketch extends Component {
             points_a: [],
             voronoi: null,
             timestamp: 0,
-            period:0
+            period:0,
+            dist_players: []
         }
     }
 
@@ -178,6 +180,9 @@ export default class P5Sketch extends Component {
 
         for(let i = 0; i < this.state.players.length; i++){
             this.state.players[i].clicked(p5);
+            if(this.show_dist && this.state.players[i].is_clicked){
+                this.state.dist_players.push(this.state.players[i]);
+            }
         }
         this.state.ball.clicked(p5);
     };
@@ -267,7 +272,29 @@ export default class P5Sketch extends Component {
         this.convexHull_A(p5, context);
 
         this.guardiolaZones(p5);
+
+        this.dist(p5);
     };
+
+    dist(p5){
+        if(!this.show_dist || this.state.dist_players.length < 2){return;}
+
+        for(let i = 0; i < this.state.dist_players.length; i++){
+            p5.strokeWeight(2);
+            p5.fill("#00000033");
+            p5.stroke(255);
+            if(this.state.dist_players[i] && this.state.dist_players[i-1]){
+                p5.line(this.state.dist_players[i].x, this.state.dist_players[i].y, this.state.dist_players[i-1].x, this.state.dist_players[i-1].y);
+                let distance = p5.dist(this.state.dist_players[i].x, this.state.dist_players[i].y, this.state.dist_players[i-1].x, this.state.dist_players[i-1].y)/12;
+
+                let midX=this.state.dist_players[i].x+((this.state.dist_players[i-1].x-this.state.dist_players[i].x)/2.0);
+                let midY=this.state.dist_players[i].y+((this.state.dist_players[i-1].y-this.state.dist_players[i].y)/2.0);
+                p5.fill("#000000");
+                p5.noStroke();
+                p5.text(distance.toFixed(2)+"m", midX, midY)
+            }
+        }
+    }
 
     displayVoronoi(p5, context){
         if(this.show_voronoi && delaunay != null){
@@ -344,6 +371,10 @@ export default class P5Sketch extends Component {
         this.show_convex_hull_a = sidebarStates.show_convexA;
         this.show_guardiola = sidebarStates.show_guardiola;
         this.show_trail = sidebarStates.show_trail;
+        this.show_dist = sidebarStates.show_dist;
+        if(!this.show_dist){
+            this.state.dist_players = [];
+        }
     };
 
     render() {
@@ -352,7 +383,7 @@ export default class P5Sketch extends Component {
                 <SideBar freehand={false} callback={this.handleSidebarStates} sketchStates={this.state} />
                 <Sketch setup={this.setup} draw={this.draw} mouseClicked={this.mouseClicked} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} mouseReleased={this.mouseReleased}/>
                 <KeyboardEventHandler
-                    handleKeys={['v','c','h','a','g','t']}
+                    handleKeys={['v','c','h','a','g','t', 'd']}
                     onKeyEvent={(key, e) => {{
                         switch(key){
                             case 'v':
@@ -372,6 +403,9 @@ export default class P5Sketch extends Component {
                                 return;
                             case 't':
                                 this.show_trail = !this.show_trail
+                                return;
+                            case 'd':
+                                this.show_dist = !this.show_dist
                                 return;
                         }
                     }}
