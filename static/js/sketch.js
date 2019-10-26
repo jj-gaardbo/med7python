@@ -26,6 +26,7 @@ export default class P5Sketch extends Component {
     show_convex_hull_a = false;
     show_guardiola = false;
     show_dist = false;
+    free_draw = false;
     width = 1360;
     height = 916;
     show_trail = false;
@@ -55,7 +56,8 @@ export default class P5Sketch extends Component {
             voronoi: null,
             timestamp: 0,
             period:0,
-            dist_players: []
+            dist_players: [],
+            mouseIsPressed: false
         }
     }
 
@@ -65,6 +67,9 @@ export default class P5Sketch extends Component {
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         this.updatePoints();
+        if(!this.state.paused){
+            this.free_draw = false;
+        }
     }
 
     setupPlayers(players){
@@ -134,6 +139,7 @@ export default class P5Sketch extends Component {
             this.props.paused[1] = false;
             this.state.ball.trail = [];
             this.state.ball.edited = false;
+            this.state.free_draw = false;
         }
 
         this.state.points = [];
@@ -177,6 +183,7 @@ export default class P5Sketch extends Component {
 
     mouseClicked = (p5) => {
         if(!this.state.paused){return;}
+        if(this.free_draw){return;}
 
         for(let i = 0; i < this.state.players.length; i++){
             this.state.players[i].clicked(p5);
@@ -189,6 +196,7 @@ export default class P5Sketch extends Component {
 
     mouseDragged = (p5) => {
         if(!this.state.paused){return;}
+        if(this.free_draw){return;}
 
         for(let i = 0; i < this.state.players.length; i++){
             if(!this.state.players[i].is_pressed){continue;}
@@ -200,10 +208,13 @@ export default class P5Sketch extends Component {
             this.state.ball.dragged(p5);
             this.state.edited = true;
         }
+
+
     };
 
     mouseReleased = (p5) => {
         if(!this.state.paused){return;}
+        this.state.mouseIsPressed = false;
 
         for(let i = 0; i < this.state.players.length; i++){
             this.state.players[i].r = 20;
@@ -219,6 +230,7 @@ export default class P5Sketch extends Component {
 
     mousePressed = (p5) => {
         if(!this.state.paused){return;}
+        this.state.mouseIsPressed = true;
 
         for(let i = 0; i < this.state.players.length; i++){
             this.state.players[i].pressing(p5);
@@ -245,7 +257,7 @@ export default class P5Sketch extends Component {
     };
 
     draw = p5 => {
-        if(this.bg){
+        if(this.bg && !this.state.paused){
             p5.background(this.bg);
         }
 
@@ -274,7 +286,19 @@ export default class P5Sketch extends Component {
         this.guardiolaZones(p5);
 
         this.dist(p5);
+
+        this.freeDraw(p5);
     };
+
+    freeDraw(p5){
+        if(!this.state.paused){return;}
+        if(this.state.mouseIsPressed){
+            p5.strokeWeight(3);
+            p5.stroke('#ffff00');
+            p5.smooth();
+            p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
+        }
+    }
 
     dist(p5){
         if(!this.show_dist || this.state.dist_players.length < 2){return;}
@@ -372,6 +396,7 @@ export default class P5Sketch extends Component {
         this.show_guardiola = sidebarStates.show_guardiola;
         this.show_trail = sidebarStates.show_trail;
         this.show_dist = sidebarStates.show_dist;
+        this.free_draw = sidebarStates.free_draw;
         if(!this.show_dist){
             this.state.dist_players = [];
         }
@@ -383,7 +408,7 @@ export default class P5Sketch extends Component {
                 <SideBar freehand={false} callback={this.handleSidebarStates} sketchStates={this.state} />
                 <Sketch setup={this.setup} draw={this.draw} mouseClicked={this.mouseClicked} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} mouseReleased={this.mouseReleased}/>
                 <KeyboardEventHandler
-                    handleKeys={['v','c','h','a','g','t', 'd']}
+                    handleKeys={['v','c','h','a','g','t', 'd', 'q']}
                     onKeyEvent={(key, e) => {{
                         switch(key){
                             case 'v':
@@ -406,6 +431,9 @@ export default class P5Sketch extends Component {
                                 return;
                             case 'd':
                                 this.show_dist = !this.show_dist
+                                return;
+                            case 'q':
+                                this.free_draw = !this.free_draw
                                 return;
                         }
                     }}

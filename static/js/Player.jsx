@@ -64,7 +64,6 @@ export default class Player {
 
     clicked = function(p5){
         if(p5.mouseX > this.x-this.r+5 && p5.mouseX < this.x + this.r+5 && p5.mouseY > this.y-this.r+5 && p5.mouseY < this.y + this.r+5){
-            console.log(this.id + " was clicked");
             this.is_clicked = true;
             this.edited = true;
             return this.id;

@@ -12,6 +12,7 @@ from werkzeug.utils import secure_filename
 from flask import Flask, request, render_template, jsonify, flash, redirect, url_for
 import webbrowser
 from threading import Timer
+from dateutil.parser import parse
 
 UPLOAD_FOLDER = './uploads'
 ALLOWED_EXTENSIONS = {'dat', 'xml'}
@@ -179,7 +180,7 @@ def clean_data(data, callback=None):
         meta_data_obj.place_start_periods(int(current_frame.timestamp), iter)
         frames.append(frame.toJSON())
         iter = iter+1
-        progress_str = "Processing: "+str(i)+" / "+str(len(data))+" - "+str(round(i/len(data)*100))+"%"
+        #progress_str = "Processing: "+str(i)+" / "+str(len(data))+" - "+str(round(i/len(data)*100))+"%"
         progress_percentage = [i, len(data), int(round(i/len(data)*100))]
         #print('\r', progress_str, end='')
     if callback:

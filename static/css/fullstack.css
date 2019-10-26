@@ -73,6 +73,7 @@ html, body{
 
 canvas{
     margin: 0 auto;
+    background-image: url("../images/pitch.png");
 }
 
 .freehand-sketch canvas{

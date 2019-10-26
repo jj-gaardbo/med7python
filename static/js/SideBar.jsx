@@ -15,11 +15,15 @@ export default class SideBar extends React.Component {
             show_convexA : false,
             show_cuardiola: false,
             show_trail:false,
-            show_dist:false
+            show_dist:false,
+            free_draw:false,
+            formation_home:[],
+            formation_away:[]
         };
 
         this.handleChange = this.handleChange.bind(this);
         this.placePlayers = this.placePlayers.bind(this);
+        this.selectFormation = this.selectFormation.bind(this);
         this.toggleVoronoi = this.toggleVoronoi.bind(this);
         this.toggleConvex = this.toggleConvex.bind(this);
         this.toggleConvexH = this.toggleConvexH.bind(this);
@@ -27,6 +31,7 @@ export default class SideBar extends React.Component {
         this.toggleGuardiola = this.toggleGuardiola.bind(this);
         this.toggleTrail = this.toggleTrail.bind(this);
         this.toggleDist = this.toggleDist.bind(this);
+        this.toggleDraw = this.toggleDraw.bind(this);
     }
 
     componentDidMount() {
@@ -51,6 +56,19 @@ export default class SideBar extends React.Component {
         this.state.menuOpen = false;
         this.props.callback(this.state);
         this.closeMenu();
+    }
+
+    selectFormation(event){
+        let formation = JSON.parse(event.target.value);
+        let team = event.target.name;
+        if(team === "H"){
+            this.state.formation_home = formation;
+        } else {
+            this.state.formation_away = formation;
+        }
+        this.props.callback(this.state);
+        this.state.formation_home = [];
+        this.state.formation_away = [];
     }
 
     toggleVoronoi(){
@@ -88,6 +106,11 @@ export default class SideBar extends React.Component {
         this.props.callback(this.state);
     }
 
+    toggleDraw(){
+        this.state.free_draw = !this.state.free_draw;
+        this.props.callback(this.state);
+    }
+
     componentDidUpdate(prevProps, prevState, snapshot) {
         if(this.props.sketchStates.placePlayers === false){
             this.state.placePlayers = false;
@@ -96,7 +119,6 @@ export default class SideBar extends React.Component {
 
     render () {
         let self = this;
-        // NOTE: You also need to provide styles, see https://github.com/negomi/react-burger-menu#styling
         return (
             <Menu isOpen={self.state.menuOpen} onChange={this.handleChange} onStateChange={(state) => this.handleStateChange(state)} pageWrapId={ "page-wrap" } outerContainerId={ "content" }>
                 {this.state.freehand ? (
@@ -107,6 +129,23 @@ export default class SideBar extends React.Component {
                             Place players (P)
                         </button>
 
+                        <hr/>
+                        <label htmlFor="formation-h">
+                            <select name="H" id="formation-h" onChange={this.selectFormation} defaultValue={0}>
+                                <option disabled value={0}>Formation Home</option>
+                                <option value={"[[112,462],[296,336],[296,586],[296,778],[296,142],[435,142],[435,337],[435,584],[435,778],[570,242],[570,683]]"}>4-4-2</option>
+                                <option value={"[[112,462],[295,145],[295,336],[295,587],[295,779],[537,464],[611,464],[537,190],[537,729],[412,683],[412,241]]"}>4-2-3-1</option>
+                            </select>
+                        </label>
+
+                        <label htmlFor="formation-a">
+                            <select name="A" id="formation-a" onChange={this.selectFormation} defaultValue={0}>
+                                <option disabled value={0}>Formation Away</option>
+                                <option value={"[[1247,464],[1066,336],[1066,586],[1066,778],[1066,142],[929,142],[929,337],[929,584],[929,778],[823,242],[824,683]]"}>4-4-2</option>
+                                <option value={"[[1248,463],[1067,338],[1068,586],[1066,776],[1067,145],[750,462],[823,461],[961,240],[964,683],[825,730],[821,189]]"}>4-2-3-1</option>
+                            </select>
+                        </label>
+
                     </div>
                 ) : (
                     <button className={"btn btn-block menu "+ (this.state.show_trail ? "btn-primary":"btn-secondary")} onClick={ this.toggleTrail }>
@@ -116,7 +155,7 @@ export default class SideBar extends React.Component {
                 )}
 
                 <button className={"btn btn-block menu "+ (this.state.show_dist ? "btn-primary":"btn-secondary")} onClick={ this.toggleDist }>
-                    <i className="fas fa-th"></i>
+                    <i className="fas fa-ruler"></i>
                     Distances
                 </button>
 
@@ -143,6 +182,13 @@ export default class SideBar extends React.Component {
                 <button className={"btn btn-block menu "+ (this.state.show_guardiola ? "btn-primary":"btn-secondary")} onClick={ this.toggleGuardiola }>
                     <i className="fas fa-th"></i>
                     Guardiola Zones (G)
+                </button>
+
+                <hr/>
+
+                <button className={"btn btn-block menu "+ (this.state.free_draw ? "btn-primary":"btn-secondary")} onClick={ this.toggleDraw }>
+                    <i className="fas fa-pencil-alt"></i>
+                    Draw (Q)
                 </button>
 
             </Menu>

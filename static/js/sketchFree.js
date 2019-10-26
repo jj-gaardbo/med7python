@@ -28,6 +28,7 @@ export default class P5FreeSketch extends Component {
     show_convex_hull_a = false;
     show_guardiola = false;
     show_dist = false;
+    free_draw = false;
     width = 1360;
     height = 916;
 
@@ -41,7 +42,8 @@ export default class P5FreeSketch extends Component {
             points_h: [],
             points_a: [],
             voronoi: null,
-            dist_players: []
+            dist_players: [],
+            mouseIsPressed: false
         }
 
     }
@@ -90,9 +92,10 @@ export default class P5FreeSketch extends Component {
     }
 
     placePlayer(x, y){
+        if(this.free_draw){return;}
+
         if(this.player_iter === 22){
             this.setState({placePlayers:false});
-            this.props.callback(this.state);
             return;
         }
         let team = this.checkteam();
@@ -108,6 +111,8 @@ export default class P5FreeSketch extends Component {
     }
 
     mouseClicked = (p5) => {
+        if(this.free_draw){return;}
+
         if(this.state.placePlayers && !this.state.menuOpen){
             if(this.player_iter === -1){
                 this.player_iter++;
@@ -125,6 +130,8 @@ export default class P5FreeSketch extends Component {
     };
 
     mouseDragged = (p5) => {
+        if(this.free_draw){return;}
+
         for(let i = 0; i < this.state.players.length; i++){
             if(!this.state.players[i].is_pressed){continue;}
                 this.state.players[i].r = 30;
@@ -136,6 +143,8 @@ export default class P5FreeSketch extends Component {
     };
 
     mouseReleased = (p5) => {
+        this.state.mouseIsPressed = false;
+        if(this.free_draw){return;}
         for(let i = 0; i < this.state.players.length; i++){
             this.state.players[i].r = 20;
             this.state.players[i].is_clicked = false;
@@ -149,6 +158,9 @@ export default class P5FreeSketch extends Component {
     };
 
     mousePressed = (p5) => {
+        this.state.mouseIsPressed = true;
+        if(!this.free_draw){return;}
+
         for(let i = 0; i < this.state.players.length; i++){
             this.state.players[i].pressing(p5);
         }
@@ -164,7 +176,7 @@ export default class P5FreeSketch extends Component {
     };
 
     draw = p5 => {
-        if(this.bg){
+        if(this.bg && !this.free_draw){
             p5.background(this.bg);
         }
 
@@ -193,7 +205,19 @@ export default class P5FreeSketch extends Component {
         this.guardiolaZones(p5);
 
         this.dist(p5);
+
+        this.freeDraw(p5);
     };
+
+    freeDraw(p5){
+        if(!this.free_draw){return;}
+        if(this.state.mouseIsPressed){
+            p5.strokeWeight(3);
+            p5.stroke('#ffff00');
+            p5.smooth();
+            p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
+        }
+    }
 
     dist(p5){
         if(!this.show_dist || this.state.dist_players.length < 2){return;}
@@ -291,8 +315,31 @@ export default class P5FreeSketch extends Component {
         this.show_convex_hull_a = sidebarStates.show_convexA;
         this.show_guardiola = sidebarStates.show_guardiola;
         this.show_dist = sidebarStates.show_dist;
+        this.free_draw = sidebarStates.free_draw;
         if(!this.show_dist){
             this.state.dist_players = [];
+        }
+
+        if(sidebarStates.formation_home.length !== 0 || sidebarStates.formation_away.length !== 0){
+            this.player_iter = 0;
+            if(sidebarStates.formation_home.length !== 0){
+                if(this.state.players.length > 0){
+                    this.state.players.splice(0,11);
+                }
+                for(let i = 0; i < sidebarStates.formation_home.length; i++){
+                    this.placePlayer(sidebarStates.formation_home[i][0], sidebarStates.formation_home[i][1]);
+                }
+                this.player_iter += 11
+            }
+            if(sidebarStates.formation_away.length !== 0){
+                if(this.state.players.length > 0){
+                    this.state.players.splice(11,11);
+                }
+                for(let i = 0; i < sidebarStates.formation_away.length; i++){
+                    this.placePlayer(sidebarStates.formation_away[i][0], sidebarStates.formation_away[i][1]);
+                }
+                this.player_iter += 11
+            }
         }
     };
 
@@ -302,7 +349,7 @@ export default class P5FreeSketch extends Component {
                 <SideBar freehand={true} callback={this.handleSidebarStates} sketchStates={this.state} />
                 <Sketch setup={this.setup} draw={this.draw} mouseClicked={this.mouseClicked} mouseReleased={this.mouseReleased} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} />
                 <KeyboardEventHandler
-                    handleKeys={['v','c','h','a','g','p', 'd']}
+                    handleKeys={['v','c','h','a','g','p', 'd', 'q']}
                     onKeyEvent={(key, e) => {{
                         switch(key){
                             case 'v':
@@ -325,6 +372,9 @@ export default class P5FreeSketch extends Component {
                                 return;
                             case 'd':
                                 this.show_dist = !this.show_dist
+                                return;
+                            case 'q':
+                                this.free_draw = !this.free_draw
                                 return;
                         }
                     }}
