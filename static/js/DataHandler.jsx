@@ -41,6 +41,7 @@ export default class DataHandler extends React.Component {
     }
 
     getTimeFrame(){
+        this.pause();
         let self = this;
         let frameToFind = Math.round(this.state.dataLength / 100 * this.state.percentage);
 
@@ -52,10 +53,12 @@ export default class DataHandler extends React.Component {
             }
         }).done(function() {
             self.setState({frame: frameToFind+self.state.skip_frames});
+            self.play();
         });
     }
 
     getTimeFrameFwdRew(frame = 0){
+        this.pause();
         let self = this;
         let frameToFind = frame;
 
@@ -67,6 +70,7 @@ export default class DataHandler extends React.Component {
             }
         }).done(function() {
             self.setState({frame: frameToFind+self.state.skip_frames});
+            self.play();
         });
     }
 
