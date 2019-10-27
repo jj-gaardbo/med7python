@@ -139,6 +139,7 @@ span.time{
     right: 20px;
     display: block;
     position: absolute;
+    z-index: -1;
 }
 
 .file-processing progress{
