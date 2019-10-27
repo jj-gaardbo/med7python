@@ -75,6 +75,7 @@ class Player:
         player_data = player_data.split(',')
         self.team_id = int(player_data[0])
         self.tag_id = player_data[1]
+        self.shirt_number = player_data[2]
         self.team = handle_teams(self.team_id)
         coords = scale_coords(player_data[3], player_data[4])
         self.x_pos = coords[0]

@@ -74,7 +74,7 @@ export default class P5Sketch extends Component {
 
     setupPlayers(players){
         for(let i = 0; i < players.length; i++){
-            this.state.players.push(new Player(players[i].x_pos, players[i].y_pos, players[i].team, players[i].tag_id));
+            this.state.players.push(new Player(players[i].x_pos, players[i].y_pos, players[i].team, players[i].tag_id, players[i].shirt_number));
         }
     }
 

@@ -99,7 +99,7 @@ export default class P5FreeSketch extends Component {
             return;
         }
         let team = this.checkteam();
-        let player = new Player(x, y, team, this.player_iter);
+        let player = new Player(x, y, team, this.player_iter, 0);
         this.state.players.push(player);
         this.player_iter++;
         if(team === HOME){
