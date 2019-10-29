@@ -1,3 +1,6 @@
+export const WIDTH = 1360;
+export const HEIGHT = 916;
+
 export const HOME = "H";
 export const AWAY = "A";
 

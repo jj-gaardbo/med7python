@@ -4,8 +4,17 @@ import {Delaunay} from "d3-delaunay";
 import SideBar from "./SideBar";
 import Player from "./Player"
 import Ball from "./Ball"
-import {HOME, AWAY} from "./Constants"
+import {HOME, AWAY, HEIGHT, WIDTH} from "./Constants"
 import KeyboardEventHandler from "react-keyboard-event-handler";
+import {
+    displayBall,
+    displayConvexHull,
+    displayDist,
+    displayGuardiolaZones,
+    displayPlayers,
+    displayVoronoi,
+    freeDraw
+} from "./Common";
 
 let delaunay = null;
 let delaunay_h = null;
@@ -13,12 +22,12 @@ let delaunay_a = null;
 let voronoi = null;
 let voronoi_h = null;
 let voronoi_a = null;
+let context = null;
 
 export default class P5FreeSketch extends Component {
     bg;
     canvas;
     player_iter = -1;
-
     h_team = [];
     a_team = [];
     playerObjects = [];
@@ -29,8 +38,6 @@ export default class P5FreeSketch extends Component {
     show_guardiola = false;
     show_dist = false;
     free_draw = false;
-    width = 1360;
-    height = 916;
 
     constructor(props){
         super(props);
@@ -58,7 +65,7 @@ export default class P5FreeSketch extends Component {
         this.state.points_a = [];
         for(let i = 0; i < this.state.players.length; i++){
             let position = [this.state.players[i].x, this.state.players[i].y];
-            if(position[0] > (1360-47) || position[0] < (47) || position[1] > (916-47) || position[1] < (0+47)){
+            if(position[0] > (WIDTH-47) || position[0] < (47) || position[1] > (HEIGHT-47) || position[1] < (0+47)){
                 continue;
             }
 
@@ -71,15 +78,15 @@ export default class P5FreeSketch extends Component {
         }
 
         delaunay = Delaunay.from(this.state.points);
-        voronoi = delaunay.voronoi([0, 0, 1360, 916]);
+        voronoi = delaunay.voronoi([0, 0, WIDTH, HEIGHT]);
         voronoi.update();
 
         delaunay_h = Delaunay.from(this.state.points_h);
-        voronoi_h = delaunay_h.voronoi([0, 0, 1360, 916]);
+        voronoi_h = delaunay_h.voronoi([0, 0, WIDTH, HEIGHT]);
         voronoi_h.update();
 
         delaunay_a = Delaunay.from(this.state.points_a);
-        voronoi_a = delaunay_a.voronoi([0, 0, 1360, 916]);
+        voronoi_a = delaunay_a.voronoi([0, 0, WIDTH, HEIGHT]);
         voronoi_a.update();
     }
 
@@ -159,7 +166,6 @@ export default class P5FreeSketch extends Component {
 
     mousePressed = (p5) => {
         this.state.mouseIsPressed = true;
-        if(!this.free_draw){return;}
 
         for(let i = 0; i < this.state.players.length; i++){
             this.state.players[i].pressing(p5);
@@ -169,10 +175,11 @@ export default class P5FreeSketch extends Component {
     };
 
     setup = (p5, canvasParentRef) => {
-        this.canvas = p5.createCanvas(1360, 916).parent(canvasParentRef);
+        this.canvas = p5.createCanvas(WIDTH, HEIGHT).parent(canvasParentRef);
         this.bg = p5.loadImage("dist/6ce1c9bce4091f1e0a741dea7c4d2564.png");
         this.setState({players:[]});
-        this.setState({ball: new Ball(1360/2, 916/2, 0)});
+        this.setState({ball: new Ball(WIDTH/2, HEIGHT/2, 0)});
+        context = p5.canvas.getContext("2d");
     };
 
     draw = p5 => {
@@ -180,131 +187,26 @@ export default class P5FreeSketch extends Component {
             p5.background(this.bg);
         }
 
-        if(this.state.players.length > 0 || typeof this.state.players[0] !== 'undefined'){
-            for(let i = 0; i < this.state.players.length; i++){
-                this.state.players[i].display(p5);
-            }
-        }
+        displayPlayers(p5, this.state.players, false, true, false);
 
-        if(this.state.ball !== null){
-            this.state.ball.display(p5);
-        }
+        displayBall(p5, this.state.ball, false, true, false);
 
         this.updatePoints();
 
-        let context = p5.canvas.getContext("2d");
+        displayVoronoi(p5, context, voronoi, delaunay, this.show_voronoi);
 
-        this.displayVoronoi(p5, context);
+        displayConvexHull(p5, context, voronoi, delaunay, this.show_convex_hull, "#00ff0044");
 
-        this.convexHull(p5, context);
+        displayConvexHull(p5, context, voronoi_h, delaunay, this.show_convex_hull_h, "#ffffff44");
 
-        this.convexHull_H(p5, context);
+        displayConvexHull(p5, context, voronoi_a, delaunay, this.show_convex_hull_a, "#ff000044");
 
-        this.convexHull_A(p5, context);
+        displayGuardiolaZones(p5, this.show_guardiola);
 
-        this.guardiolaZones(p5);
+        displayDist(p5, this.state.dist_players, this.show_dist);
 
-        this.dist(p5);
-
-        this.freeDraw(p5);
+        freeDraw(p5, this.free_draw, this.state.mouseIsPressed);
     };
-
-    freeDraw(p5){
-        if(!this.free_draw){return;}
-        if(this.state.mouseIsPressed){
-            p5.strokeWeight(3);
-            p5.stroke('#ffff00');
-            p5.smooth();
-            p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
-        }
-    }
-
-    dist(p5){
-        if(!this.show_dist || this.state.dist_players.length < 2){return;}
-
-        for(let i = 0; i < this.state.dist_players.length; i++){
-            p5.strokeWeight(2);
-            p5.fill("#00000033");
-            p5.stroke(255);
-            if(this.state.dist_players[i] && this.state.dist_players[i-1]){
-                p5.line(this.state.dist_players[i].x, this.state.dist_players[i].y, this.state.dist_players[i-1].x, this.state.dist_players[i-1].y);
-                let distance = p5.dist(this.state.dist_players[i].x, this.state.dist_players[i].y, this.state.dist_players[i-1].x, this.state.dist_players[i-1].y)/12;
-
-                let midX=this.state.dist_players[i].x+((this.state.dist_players[i-1].x-this.state.dist_players[i].x)/2.0);
-                let midY=this.state.dist_players[i].y+((this.state.dist_players[i-1].y-this.state.dist_players[i].y)/2.0);
-                p5.fill("#000000");
-                p5.noStroke();
-                p5.text(distance.toFixed(2)+"m", midX, midY)
-            }
-        }
-    }
-
-    displayVoronoi(p5, context){
-        if(this.show_voronoi && delaunay != null){
-            p5.strokeWeight(2);
-            p5.fill("#00000033");
-            p5.stroke("#00000055");
-            context.beginPath();
-            voronoi.update().render(context);
-            voronoi.renderBounds(context);
-            context.stroke();
-
-            context.beginPath();
-            voronoi.delaunay.renderPoints(context, 4);
-            context.fill();
-        }
-    }
-
-    convexHull(p5, context){
-        if(this.show_convex_hull && delaunay != null){
-            context.fillStyle = "#00ff0044";
-            context.beginPath();
-            voronoi.delaunay.renderHull(context);
-            context.fill();
-        }
-    }
-
-    convexHull_H(p5, context){
-        if(this.show_convex_hull_h && delaunay_h != null){
-            context.fillStyle = "#ffffff44";
-            context.beginPath();
-            voronoi_h.delaunay.renderHull(context);
-            context.fill();
-        }
-    }
-
-    convexHull_A(p5, context){
-        if(this.show_convex_hull_a && delaunay_a != null){
-            context.fillStyle = "#ff000044";
-            context.beginPath();
-            voronoi_a.delaunay.renderHull(context);
-            context.fill();
-        }
-    }
-
-    guardiolaZones(p5){
-        if(this.show_guardiola){
-            p5.strokeWeight(3);
-            p5.stroke("#00009933")
-            let padding = 45;
-            p5.line(padding, 354, this.width-padding, 354);
-            p5.line(padding, 574, this.width-padding, 574);
-
-            p5.line(padding, 223, this.width-padding, 223);
-            p5.line(padding, 705, this.width-padding, 705);
-
-            p5.line(244, padding, 244, this.height-padding);
-            p5.line(1116, padding, 1116, this.height-padding);
-
-            p5.line(this.width/2-1, padding, this.width/2-1, this.height-padding);
-
-            p5.line(this.width/3-20, padding, this.width/3-20, padding+178);
-            p5.line(this.width/3-20, this.height-(164+padding), this.width/3-20, this.height-padding);
-
-            p5.line(this.width-(this.width/3)+20, padding, this.width-(this.width/3)+20, padding+178);
-            p5.line(this.width+20-(this.width/3), this.height-(164+padding), this.width+20-(this.width/3), this.height-padding);
-        }
-    }
 
     handleSidebarStates = (sidebarStates) => {
         this.state.placePlayers = sidebarStates.placePlayers;
