@@ -9,7 +9,6 @@ export default class Player {
         this.r = 20;
         this.team = team;
         this.shirtNum = shirt;
-        this.origShirtNum = shirt;
         this.id = id;
         this.is_clicked = false;
         this.is_dragged = false;
@@ -51,12 +50,11 @@ export default class Player {
             p5.fill("#00000011")
         }
         p5.ellipse(this.x, this.y, this.r, this.r);
-
         p5.fill(255);
-        if(this.shirtNum !== this.origShirtNum){
-            p5.text(this.origShirtNum, this.x-5, this.y+5);
-        } else {
+        if(typeof this.shirtNum !== "undefined"){
             p5.text(this.shirtNum, this.x-5, this.y+5);
+        } else {
+            p5.text(this.id, this.x-5, this.y+5);
         }
     };
 

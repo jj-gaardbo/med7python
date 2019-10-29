@@ -243,7 +243,7 @@ export default class P5FreeSketch extends Component {
         if(this.show_voronoi && delaunay != null){
             p5.strokeWeight(2);
             p5.fill("#00000033");
-            p5.stroke(255);
+            p5.stroke("#00000055");
             context.beginPath();
             voronoi.update().render(context);
             voronoi.renderBounds(context);

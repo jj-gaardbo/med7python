@@ -168,7 +168,7 @@ def in_periods(timestamp):
     return False, -1, -1
 
 
-def clean_data(data, callback=None):
+def clean_data(data, filepath, filename, callback=None):
     global current_frame, meta_data_obj, progress_str, meta_data, progress_percentage
     iter = 0
     seconds = 0
@@ -203,6 +203,11 @@ def clean_data(data, callback=None):
         #progress_str = "Processing: "+str(i)+" / "+str(len(data))+" - "+str(round(i/len(data)*100))+"%"
         progress_percentage = [i, len(data), int(round(i/len(data)*100))]
         #print('\r', progress_str, end='')
+
+    #filepath = os.path.join(app.config['UPLOAD_FOLDER'], str(filename.split(".")[0])+".processed.json")
+    #with open(filepath, 'w') as json_file:
+    #    json.dump(frames, json_file, separators=(',', ':'))
+
     if callback:
         callback()
 
@@ -263,11 +268,14 @@ def upload_file():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
+
+        if not os.path.isfile(filepath):
+            file.save(filepath)
+
         if check_file_type(filename) == "xml":
             handle_meta_data(filepath)
         else:
-            process_data(filepath)
+            process_data(filepath, filename)
         return redirect(url_for('uploaded_file', filename=filename))
 
 
@@ -305,9 +313,9 @@ def handle_meta_data(filename):
     meta_data = meta.toJSON()
 
 
-def process_data(filename):
-    data = [i.strip().split(';') for i in open(filename).readlines()]
-    clean_data(data, update_meta)
+def process_data(filepath, filename):
+    data = [i.strip().split(';') for i in open(filepath).readlines()]
+    clean_data(data, filepath, filename, update_meta)
 
 
 if __name__ == "__main__":

@@ -94,6 +94,9 @@ export default class P5Sketch extends Component {
                 this.state.players[searchResult.index].x = newFramePlayers[i].x_pos;
                 this.state.players[searchResult.index].y = newFramePlayers[i].y_pos;
                 this.state.players[searchResult.index].team = newFramePlayers[i].team;
+                this.state.players[searchResult.index].shirtNum = newFramePlayers[i].shirt_number;
+            } else {
+                this.state.players.push(new Player(newFramePlayers[i].x_pos, newFramePlayers[i].y_pos, newFramePlayers[i].team, newFramePlayers[i].tag_id, newFramePlayers[i].shirt_number));
             }
         }
         if(clearTrails){
@@ -148,7 +151,7 @@ export default class P5Sketch extends Component {
         for(let i = 0; i < this.state.players.length; i++){
             if(this.state.players[i].team !== HOME && this.state.players[i].team !== AWAY){continue;}
             let position = [this.state.players[i].x, this.state.players[i].y];
-            if(position[0] > (1360-47) || position[0] < (47) || position[1] > (916-47) || position[1] < (0+47)){
+            if(position[0] > (1360-47) || position[0] < (47) || position[1] > (916-47) || position[1] < (47)){
                 continue;
             }
 
@@ -257,7 +260,7 @@ export default class P5Sketch extends Component {
     };
 
     draw = p5 => {
-        if(this.bg && !this.state.paused){
+        if(this.bg && !this.free_draw){
             p5.background(this.bg);
         }
 
@@ -324,7 +327,7 @@ export default class P5Sketch extends Component {
         if(this.show_voronoi && delaunay != null){
             p5.strokeWeight(2);
             p5.fill("#00000033");
-            p5.stroke(255);
+            p5.stroke("#00000055");
             context.beginPath();
             voronoi.update().render(context);
             voronoi.renderBounds(context);
