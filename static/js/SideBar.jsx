@@ -1,6 +1,8 @@
 import React from "react";
 import { slide as Menu } from 'react-burger-menu'
 
+let $ = require('jquery');
+
 export default class SideBar extends React.Component {
     constructor(props){
         super(props);
@@ -32,11 +34,18 @@ export default class SideBar extends React.Component {
         this.toggleTrail = this.toggleTrail.bind(this);
         this.toggleDist = this.toggleDist.bind(this);
         this.toggleDraw = this.toggleDraw.bind(this);
+        this.terminate = this.terminate.bind(this);
     }
 
     componentDidMount() {
         this.setState({sketch:this.props.sketchStates});
         this.props.callback(this.state);
+    }
+
+    terminate(){
+        $.post(window.location.href + 'terminate', (resp) => {
+            alert("Server terminated. Goodbye!");
+        });
     }
 
     handleChange(){
@@ -189,6 +198,13 @@ export default class SideBar extends React.Component {
                 <button className={"btn btn-block menu "+ (this.state.free_draw ? "btn-primary":"btn-secondary")} onClick={ this.toggleDraw }>
                     <i className="fas fa-pencil-alt"></i>
                     Draw (Q)
+                </button>
+
+                <hr/>
+
+                <button className={"btn btn-block menu shutdown btn-danger align-self-end"} onClick={ this.terminate }>
+                    <i className="fas fa-close"></i>
+                    Shutdown
                 </button>
 
             </Menu>

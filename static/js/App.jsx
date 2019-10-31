@@ -4,6 +4,9 @@ import P5Sketch from './sketch.js';
 import P5FreeSketch from './sketchFree.js';
 import ReactFileDrop from "./FileDrop";
 import {B4, SETAWAY, SETHOME} from "./Constants";
+
+let $ = require('jquery');
+
 require('../css/fullstack.css');
 
 export default class App extends React.Component {
@@ -31,6 +34,7 @@ export default class App extends React.Component {
         };
 
         this.openFreeHandSketch = this.openFreeHandSketch.bind(this);
+        this.checkIfServerHasData = this.checkIfServerHasData.bind(this);
     }
 
     handleChange = (frameData) => {
@@ -80,6 +84,18 @@ export default class App extends React.Component {
     openFreeHandSketch = () => {
         this.setState({freehand:true});
     };
+
+    checkIfServerHasData = () => {
+        $.get(window.location.href + 'has_data', (response) => {
+            if(response == "1"){
+                this.setState({has_files: true});
+            }
+        });
+    };
+
+    componentDidMount() {
+        this.checkIfServerHasData()
+    }
 
     render() {
         return(

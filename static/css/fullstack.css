@@ -267,6 +267,14 @@ button.freehand i{
     padding: 10px;
 }
 
+button.shutdown{
+    bottom: 20px;
+    top: auto;
+    align-self: end;
+    max-width: 100%;
+    position: absolute!important;
+}
+
 .freehand-tools{
     position: absolute;
     left: 0;
@@ -348,6 +356,7 @@ Note: Beware of modifying this element as it can break the animations - you shou
 /* Wrapper for item list */
 .bm-item-list {
     color: #b8b7ad;
+    position: relative;
     padding: 0.5em 0;
 }
 

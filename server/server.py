@@ -284,6 +284,26 @@ def uploaded_file(filename):
     return check_file_type(filename)
 
 
+@app.route("/has_data")
+def has_data():
+    if len(frames) > 0 and len(meta_data) > 0:
+        return "1"
+    return "0"
+
+
+def shutdown_server():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+
+
+@app.route('/terminate', methods=['POST'])
+def terminate():
+    shutdown_server()
+    return 'Server shutting down...'
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
