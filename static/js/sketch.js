@@ -8,12 +8,12 @@ import {HOME, AWAY, HEIGHT, WIDTH} from "./Constants"
 import KeyboardEventHandler from 'react-keyboard-event-handler';
 import {
     displayBall,
-    displayConvexHull,
+    displayConvexHull, displayDangerZones,
     displayDist,
     displayGuardiolaZones,
-    displayPlayers,
-    displayVoronoi,
-    freeDraw
+    displayPlayers, displayTrail,
+    displayVoronoi, drawGrid,
+    freeDraw, scaleCoords, setupGrid
 } from "./Common";
 
 let delaunay = null;
@@ -31,6 +31,7 @@ export default class P5Sketch extends Component {
     playerObjects = [];
     ball;
     show_voronoi = false;
+    show_voronoi_danger = false;
     show_convex_hull = false;
     show_convex_hull_h = false;
     show_convex_hull_a = false;
@@ -46,6 +47,7 @@ export default class P5Sketch extends Component {
     third_period_end = 0;
     fourth_period_start = 0;
     fourth_period_end = 0;
+    trails = []
 
 
     constructor(props){
@@ -63,7 +65,8 @@ export default class P5Sketch extends Component {
             timestamp: 0,
             period:0,
             dist_players: [],
-            mouseIsPressed: false
+            mouseIsPressed: false,
+            zones: []
         }
     }
 
@@ -79,6 +82,7 @@ export default class P5Sketch extends Component {
     }
 
     setupPlayers(players){
+        this.state.players = [];
         for(let i = 0; i < players.length; i++){
             let position = [players[i].x, players[i].y];
             if(position[0] > (WIDTH-47) || position[0] < (47) || position[1] > (HEIGHT-47) || position[1] < (47)){
@@ -91,49 +95,21 @@ export default class P5Sketch extends Component {
         }
     }
 
-    search(key, array){
+    search(shirtNum, id, array){
         for (let i=0; i < array.length; i++) {
-            if (parseInt(array[i].id) === parseInt(key)) {
+            if (parseInt(array[i].shirtNum) === parseInt(shirtNum) || parseInt(array[i].id) === parseInt(id)) {
                 return {"index":i,"player":array[i]};
             }
         }
         return null;
     }
 
-    updatePlayers(newFramePlayers, clearTrails = false){
-        this.state.points = [];
-        this.state.points_h = [];
-        this.state.points_a = [];
-        for(let i = 0; i < newFramePlayers.length; i++){
-            let searchResult = this.search(newFramePlayers[i].tag_id, this.state.players);
-            if(searchResult !== null){
-                this.state.players[searchResult.index].x = newFramePlayers[i].x_pos;
-                this.state.players[searchResult.index].y = newFramePlayers[i].y_pos;
-                this.state.players[searchResult.index].team = newFramePlayers[i].team;
-                this.state.players[searchResult.index].shirtNum = newFramePlayers[i].shirt_number;
-                if(this.state.players[searchResult.index].team === HOME){
-                    this.state.points_h.push([this.state.players[searchResult.index].x,this.state.players[searchResult.index].y]);
-                } else if(this.state.players[searchResult.index].team === AWAY) {
-                    this.state.points_a.push([this.state.players[searchResult.index].x,this.state.players[searchResult.index].y]);
-                }
-                this.state.points.push([this.state.players[searchResult.index].x,this.state.players[searchResult.index].y]);
-            } else {
-                if(parseInt(newFramePlayers[i].shirt_number) !== -1 && (newFramePlayers[i].team  !== HOME || newFramePlayers[i].team  !== AWAY)){
-                    this.state.players.push(new Player(newFramePlayers[i].x_pos, newFramePlayers[i].y_pos, newFramePlayers[i].team, newFramePlayers[i].tag_id, newFramePlayers[i].shirt_number));
-                    if(newFramePlayers[i].team === HOME){
-                        this.state.points_h.push([newFramePlayers[i].x,newFramePlayers[i].y]);
-                    } else if(newFramePlayers[i].team === AWAY) {
-                        this.state.points_a.push([newFramePlayers[i].x,newFramePlayers[i].y]);
-                    }
-                    this.state.points.push([newFramePlayers[i].x,newFramePlayers[i].y]);
-                }
-            }
-        }
-        if(clearTrails){
-            for(let i = 0; i < this.state.players.length; i++) {
-                this.state.players[i].trail = [];
-                this.state.players[i].edited = false;
-            }
+    updatePlayers(newFramePlayers, p5, clearTrails = false){
+        this.setupPlayers(newFramePlayers);
+
+        for(let i = 0; i < this.state.players.length; i++){
+            this.trails.push([this.state.players[i].x, this.state.players[i].y]);
+            if(this.trails.length >= 880) this.trails.shift();
         }
     }
 
@@ -149,7 +125,7 @@ export default class P5Sketch extends Component {
         }
     }
 
-    updatePoints(){
+    updatePoints(p5){
         if(this.props.current_frame === null || this.props.current_frame.length === 0){return;}
 
         this.state.timestamp = parseInt(this.props.current_frame.timestamp);
@@ -157,18 +133,15 @@ export default class P5Sketch extends Component {
 
         if(!this.state.paused){
             this.state.edited = false;
-            if(this.state.players.length === 0){
-                this.setupPlayers(this.props.current_frame.players);
-            } else {
-                this.updatePlayers(this.props.current_frame.players);
-            }
-            this.state.ball.x = this.props.current_frame.ball.x_pos;
-            this.state.ball.y = this.props.current_frame.ball.y_pos;
+            this.updatePlayers(this.props.current_frame.players, p5);
+            let ballCoords = scaleCoords(this.props.current_frame.ball.x_pos, this.props.current_frame.ball.y_pos);
+            this.state.ball.x = ballCoords[0];
+            this.state.ball.y = ballCoords[1];
             this.state.ball.z = this.props.current_frame.ball.z_pos;
         }
         this.state.paused = this.props.paused[0];
         if(this.props.paused[1] && !this.state.edited){
-            this.updatePlayers(this.props.current_frame.players,true);
+            this.updatePlayers(this.props.current_frame.players,p5, true);
             this.props.paused[1] = false;
             this.state.ball.trail = [];
             this.state.ball.edited = false;
@@ -287,8 +260,8 @@ export default class P5Sketch extends Component {
             self.fourth_period_start = parseInt(periods['4'].start_frame);
             self.fourth_period_end = parseInt(periods['4'].end_frame);
         });
-
         context = p5.canvas.getContext("2d");
+        this.state.zones = setupGrid(p5);
     };
 
     draw = p5 => {
@@ -296,13 +269,11 @@ export default class P5Sketch extends Component {
             p5.background(this.bg);
         }
 
-        displayPlayers(p5, this.state.players, this.show_trail, this.state.paused, this.state.edited);
-
-        displayBall(p5, this.state.ball, this.show_trail, this.state.paused, this.state.edited);
-
-        this.updatePoints();
+        this.updatePoints(p5);
 
         displayVoronoi(p5, context, voronoi, delaunay, this.show_voronoi);
+
+        displayDangerZones(p5, voronoi, this.show_voronoi_danger);
 
         displayConvexHull(p5, context, voronoi, delaunay, this.show_convex_hull, "#00ff0044");
 
@@ -315,11 +286,24 @@ export default class P5Sketch extends Component {
         displayDist(p5, this.state.dist_players, this.show_dist);
 
         freeDraw(p5, this.free_draw, this.state.mouseIsPressed);
+
+        if(this.show_trail){
+            for(let i = 0; i<this.trails.length;i++){
+                p5.ellipse(this.trails[i][0], this.trails[i][1],5, 5);
+            }
+        }
+
+        displayPlayers(p5, this.state.players, this.show_trail, this.state.paused, this.state.edited);
+
+        displayBall(p5, this.state.ball, this.show_trail, this.state.paused, this.state.edited);
+
+        //drawGrid(p5, this.state.zones);
     };
 
     handleSidebarStates = (sidebarStates) => {
         this.state.menuOpen = sidebarStates.menuOpen;
         this.show_voronoi = sidebarStates.show_voronoi;
+        this.show_voronoi_danger = sidebarStates.show_voronoi_danger;
         this.show_convex_hull = sidebarStates.show_convex;
         this.show_convex_hull_h = sidebarStates.show_convexH;
         this.show_convex_hull_a = sidebarStates.show_convexA;
@@ -338,11 +322,14 @@ export default class P5Sketch extends Component {
                 <SideBar freehand={false} callback={this.handleSidebarStates} sketchStates={this.state} />
                 <Sketch setup={this.setup} draw={this.draw} mouseClicked={this.mouseClicked} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} mouseReleased={this.mouseReleased}/>
                 <KeyboardEventHandler
-                    handleKeys={['v','c','h','a','g','t', 'd', 'q']}
+                    handleKeys={['v','c','h','a','g','t', 'd', 'q','z']}
                     onKeyEvent={(key, e) => {{
                         switch(key){
                             case 'v':
                                 this.show_voronoi = !this.show_voronoi
+                                return;
+                            case 'z':
+                                this.show_voronoi_danger = !this.show_voronoi_danger
                                 return;
                             case 'c':
                                 this.show_convex_hull = !this.show_convex_hull

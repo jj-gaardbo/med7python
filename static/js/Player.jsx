@@ -1,11 +1,13 @@
 import {AWAY, HOME} from "./Constants";
+import {scaleCoords} from "./Common";
 
 const allEqual = arr => arr.every( v => v === arr[0] );
 
 export default class Player {
     constructor(x, y, team, id, shirt){
-        this.x = x;
-        this.y = y;
+        let coords = scaleCoords(x, y);
+        this.x = coords[0];
+        this.y = coords[1];
         this.r = 20;
         this.team = team;
         this.shirtNum = shirt;

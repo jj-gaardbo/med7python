@@ -47,7 +47,7 @@ export default class DataHandler extends React.Component {
 
         $.get(window.location.href + 'data?frame='+frameToFind, (data) => {
             this.setState({data: data});
-            this.props.callback(data);
+            this.props.callback(data, this.state.frame);
             if(this.state.paused){
                 this.props.pauseCallback(true, true);
             }
@@ -64,7 +64,7 @@ export default class DataHandler extends React.Component {
 
         $.get(window.location.href + 'data?frame='+frameToFind, (data) => {
             this.setState({data: data});
-            this.props.callback(data);
+            this.props.callback(data, this.state.frame);
             if(this.state.paused){
                 this.props.pauseCallback(true, true);
             }
@@ -93,7 +93,7 @@ export default class DataHandler extends React.Component {
 
         $.get(window.location.href + 'data?frame='+frame, (data) => {
             this.setState({data: data});
-            this.props.callback(data, this.state.paused);
+            this.props.callback(data, this.state.frame);
         }).done(function() {
             self.setState({frame: frame+self.state.skip_frames});
         });

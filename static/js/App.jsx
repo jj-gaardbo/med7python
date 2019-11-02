@@ -15,6 +15,7 @@ export default class App extends React.Component {
         super(props)
         this.state = {
             current_frame: null,
+            frame_index: 0,
             status: "",
             possession: "",
             meta_data: null,
@@ -37,7 +38,7 @@ export default class App extends React.Component {
         this.checkIfServerHasData = this.checkIfServerHasData.bind(this);
     }
 
-    handleChange = (frameData) => {
+    handleChange = (frameData, index) => {
         let parsed = JSON.parse(frameData);
         if(parsed.ball.hasOwnProperty("action")){
             switch(parsed.ball.action){
@@ -50,7 +51,7 @@ export default class App extends React.Component {
             }
             this.setState({ball_action: parsed.ball.action});
         }
-        this.setState({current_frame:parsed,status:parsed.ball.status,possession:parsed.ball.possession, time:parsed.time});
+        this.setState({current_frame:parsed,status:parsed.ball.status,possession:parsed.ball.possession, time:parsed.time, frame_index: index});
     };
 
     handlePause = (paused, newframe=false) => {
@@ -116,7 +117,7 @@ export default class App extends React.Component {
                                     <span className={"time"}>
                                         {this.state.time}
                                     </span>
-                                    <P5Sketch meta_data={this.state.meta_data} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
+                                    <P5Sketch meta_data={this.state.meta_data} frame_index={this.state.frame_index} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
                                 </div>
                             }
                             <div className="match-details">

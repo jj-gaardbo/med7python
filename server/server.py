@@ -77,19 +77,15 @@ class Player:
         self.tag_id = player_data[1]
         self.shirt_number = player_data[2]
         self.team = handle_teams(self.team_id)
-        coords = scale_coords(player_data[3], player_data[4])
-        self.x_pos = coords[0]
-        self.y_pos = coords[1]
-        self.orig_coords_x = player_data[3]
-        self.orig_coords_y = player_data[4]
+        self.x_pos = player_data[3]
+        self.y_pos = player_data[4]
 
 
 class Ball:
     def __init__(self, ball_data):
         ball = re.split('[,]', ball_data[1:])
-        coords = scale_coords(ball[0], ball[1])
-        self.x_pos = coords[0]
-        self.y_pos = coords[1]
+        self.x_pos = ball[0]
+        self.y_pos = ball[1]
         self.z_pos = ball[2]
         self.speed = ball[3]
         self.possession = ball[4]
@@ -218,6 +214,18 @@ def get_data(n):
     return jsonify(frames[n])
 
 
+def get_past_data(n, size):
+    if n > len(frames)-1:
+        return frames[len(frames)-1]
+    elif not frames[n-size]:
+        return frames[0]
+
+    trail = []
+    for i in range(size):
+        trail.append(frames[n-i])
+    return jsonify(trail)
+
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -242,6 +250,13 @@ def data_length():
 def data():
     frame = request.args.get('frame')
     return get_data(int(frame))
+
+
+@app.route("/trail_data")
+def trail_data():
+    frame = request.args.get('frame')
+    size = request.args.get('size')
+    return get_past_data(int(frame), int(size))
 
 
 @app.route("/meta")

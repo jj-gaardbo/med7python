@@ -12,6 +12,7 @@ export default class SideBar extends React.Component {
             menuOpen: false,
             placePlayers : false,
             show_voronoi : false,
+            show_voronoi_danger: false,
             show_convex : false,
             show_convexH : false,
             show_convexA : false,
@@ -27,6 +28,7 @@ export default class SideBar extends React.Component {
         this.placePlayers = this.placePlayers.bind(this);
         this.selectFormation = this.selectFormation.bind(this);
         this.toggleVoronoi = this.toggleVoronoi.bind(this);
+        this.toggleVoronoiDanger = this.toggleVoronoiDanger.bind(this);
         this.toggleConvex = this.toggleConvex.bind(this);
         this.toggleConvexH = this.toggleConvexH.bind(this);
         this.toggleConvexA = this.toggleConvexA.bind(this);
@@ -82,6 +84,11 @@ export default class SideBar extends React.Component {
 
     toggleVoronoi(){
         this.state.show_voronoi = !this.state.show_voronoi;
+        this.props.callback(this.state);
+    }
+
+    toggleVoronoiDanger(){
+        this.state.show_voronoi_danger = !this.state.show_voronoi_danger;
         this.props.callback(this.state);
     }
 
@@ -171,6 +178,11 @@ export default class SideBar extends React.Component {
                 <button className={"btn btn-block menu "+ (this.state.show_voronoi ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoi }>
                     <i className="fas fa-gem"></i>
                     Voronoi (V)
+                </button>
+
+                <button className={"btn btn-block menu "+ (this.state.show_voronoi_danger ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoiDanger }>
+                    <i className="fa fa-warning"></i>
+                    Highlight danger zones (Z)
                 </button>
 
                 <button className={"btn btn-block menu "+ (this.state.show_convex ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvex }>

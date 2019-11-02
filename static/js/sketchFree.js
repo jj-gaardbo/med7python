@@ -8,7 +8,7 @@ import {HOME, AWAY, HEIGHT, WIDTH} from "./Constants"
 import KeyboardEventHandler from "react-keyboard-event-handler";
 import {
     displayBall,
-    displayConvexHull,
+    displayConvexHull, displayDangerZones,
     displayDist,
     displayGuardiolaZones,
     displayPlayers,
@@ -32,6 +32,7 @@ export default class P5FreeSketch extends Component {
     a_team = [];
     playerObjects = [];
     show_voronoi = false;
+    show_voronoi_danger = false;
     show_convex_hull = false;
     show_convex_hull_h = false;
     show_convex_hull_a = false;
@@ -187,13 +188,11 @@ export default class P5FreeSketch extends Component {
             p5.background(this.bg);
         }
 
-        displayPlayers(p5, this.state.players, false, true, false);
-
-        displayBall(p5, this.state.ball, false, true, false);
-
         this.updatePoints();
 
         displayVoronoi(p5, context, voronoi, delaunay, this.show_voronoi);
+
+        displayDangerZones(p5, voronoi, this.show_voronoi_danger);
 
         displayConvexHull(p5, context, voronoi, delaunay, this.show_convex_hull, "#00ff0044");
 
@@ -206,12 +205,18 @@ export default class P5FreeSketch extends Component {
         displayDist(p5, this.state.dist_players, this.show_dist);
 
         freeDraw(p5, this.free_draw, this.state.mouseIsPressed);
+
+        displayPlayers(p5, this.state.players, false, true, false);
+
+        displayBall(p5, this.state.ball, false, true, false);
+
     };
 
     handleSidebarStates = (sidebarStates) => {
         this.state.placePlayers = sidebarStates.placePlayers;
         this.state.menuOpen = sidebarStates.menuOpen;
         this.show_voronoi = sidebarStates.show_voronoi;
+        this.show_voronoi_danger = sidebarStates.show_voronoi_danger;
         this.show_convex_hull = sidebarStates.show_convex;
         this.show_convex_hull_h = sidebarStates.show_convexH;
         this.show_convex_hull_a = sidebarStates.show_convexA;
@@ -251,11 +256,14 @@ export default class P5FreeSketch extends Component {
                 <SideBar freehand={true} callback={this.handleSidebarStates} sketchStates={this.state} />
                 <Sketch setup={this.setup} draw={this.draw} mouseClicked={this.mouseClicked} mouseReleased={this.mouseReleased} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} />
                 <KeyboardEventHandler
-                    handleKeys={['v','c','h','a','g','p', 'd', 'q']}
+                    handleKeys={['v','c','h','a','g','p', 'd', 'q','z']}
                     onKeyEvent={(key, e) => {{
                         switch(key){
                             case 'v':
                                 this.show_voronoi = !this.show_voronoi
+                                return;
+                            case 'z':
+                                this.show_voronoi_danger = !this.show_voronoi_danger
                                 return;
                             case 'c':
                                 this.show_convex_hull = !this.show_convex_hull

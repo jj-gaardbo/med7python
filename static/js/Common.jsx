@@ -1,4 +1,83 @@
-import {HEIGHT, WIDTH} from "./Constants";
+import {
+    COORDSCALE,
+    GRIDCOLS,
+    GRIDROWS,
+    GRIDSIZE_W,
+    GRIDSIZE_H,
+    HEIGHT,
+    GRIDPADDING_W,
+    WIDTH,
+    GRIDPADDING_H
+} from "./Constants";
+import QuantificationZone from "./QuantificationZone";
+
+let dangerValues = [
+    [0.08,0.08,0.08,0.10,0.20,0.35,0.65,0.65,0.70,0.75,0.80,0.85,0.90,1.00,1.00,1.00,1.00,1.00,1.00,0.90,0.85,0.80,0.75,0.70,0.65,0.65,0.35,0.20,0.10,0.08,0.08,0.08],
+    [0.08,0.08,0.10,0.25,0.30,0.35,0.65,0.70,0.70,0.80,0.85,0.90,0.95,1.00,1.00,1.00,1.00,1.00,1.00,0.95,0.90,0.85,0.80,0.70,0.70,0.65,0.35,0.30,0.25,0.10,0.08,0.08],
+    [0.08,0.10,0.15,0.30,0.35,0.40,0.70,0.70,0.75,0.85,0.90,0.95,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,0.95,0.90,0.85,0.75,0.70,0.70,0.40,0.35,0.30,0.15,0.10,0.08],
+    [0.08,0.10,0.15,0.30,0.35,0.40,0.70,0.80,0.85,0.85,0.90,0.95,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,0.95,0.90,0.85,0.85,0.80,0.70,0.40,0.35,0.30,0.15,0.10,0.08],
+    [0.08,0.10,0.15,0.30,0.35,0.45,0.75,0.80,0.85,0.85,0.90,0.95,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,0.95,0.90,0.85,0.85,0.80,0.75,0.45,0.35,0.30,0.15,0.10,0.08],
+    [0.08,0.10,0.15,0.25,0.30,0.45,0.75,0.80,0.80,0.85,0.90,0.90,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.90,0.90,0.85,0.80,0.80,0.75,0.45,0.30,0.25,0.15,0.10,0.08],
+    [0.08,0.10,0.15,0.25,0.25,0.45,0.75,0.75,0.80,0.80,0.85,0.90,0.90,0.90,0.90,0.90,0.90,0.90,0.90,0.90,0.90,0.85,0.80,0.80,0.75,0.75,0.45,0.25,0.25,0.15,0.10,0.08],
+    [0.08,0.10,0.15,0.20,0.25,0.45,0.70,0.75,0.80,0.80,0.85,0.85,0.90,0.90,0.90,0.90,0.90,0.90,0.90,0.90,0.85,0.85,0.80,0.80,0.75,0.70,0.45,0.25,0.20,0.15,0.10,0.08],
+    [0.08,0.10,0.15,0.15,0.20,0.35,0.45,0.50,0.55,0.55,0.60,0.60,0.65,0.65,0.65,0.65,0.65,0.65,0.65,0.65,0.60,0.60,0.55,0.55,0.50,0.45,0.35,0.20,0.15,0.15,0.10,0.08],
+    [0.08,0.08,0.10,0.15,0.15,0.20,0.35,0.35,0.40,0.40,0.45,0.45,0.55,0.55,0.55,0.55,0.55,0.55,0.55,0.55,0.45,0.45,0.40,0.40,0.35,0.35,0.20,0.15,0.15,0.10,0.08,0.08],
+    [0.06,0.08,0.08,0.10,0.15,0.20,0.20,0.30,0.35,0.35,0.40,0.40,0.45,0.50,0.50,0.50,0.50,0.50,0.50,0.45,0.40,0.40,0.35,0.35,0.30,0.20,0.20,0.15,0.10,0.08,0.08,0.06],
+    [0.06,0.08,0.08,0.08,0.10,0.15,0.20,0.20,0.20,0.20,0.20,0.25,0.35,0.40,0.40,0.40,0.40,0.40,0.40,0.35,0.25,0.20,0.20,0.20,0.20,0.20,0.15,0.10,0.08,0.08,0.08,0.06],
+    [0.04,0.06,0.08,0.08,0.08,0.10,0.10,0.15,0.15,0.15,0.15,0.20,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.20,0.15,0.15,0.15,0.15,0.10,0.10,0.08,0.08,0.08,0.06,0.04],
+    [0.04,0.04,0.06,0.08,0.08,0.08,0.08,0.10,0.10,0.10,0.10,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.10,0.10,0.10,0.10,0.08,0.08,0.08,0.08,0.06,0.04,0.04],
+    [0.04,0.04,0.04,0.06,0.06,0.06,0.06,0.08,0.08,0.08,0.08,0.10,0.10,0.10,0.10,0.10,0.10,0.10,0.10,0.10,0.10,0.08,0.08,0.08,0.08,0.06,0.06,0.06,0.06,0.04,0.04,0.04],
+    [0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.06,0.06,0.06,0.06,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.06,0.06,0.06,0.06,0.04,0.04,0.04,0.04,0.04,0.04,0.04],
+    [0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04]
+];
+
+let zones = [];
+
+function getValue(i, j){
+
+
+    if(i < dangerValues.length && dangerValues[i] && dangerValues[i][j]){
+        return dangerValues[i][j];
+    } else if(i > 35){
+        i = 17-(i-35);
+        return dangerValues[i][j];
+    }
+    return 0;
+}
+
+export function setupGrid(p5){
+    p5.translate(GRIDPADDING_W, GRIDPADDING_H);
+    for (let i = 0; i < GRIDCOLS; i++) {
+        zones[i] = [];
+        // Begin loop for rows
+        for (let j = 0; j < GRIDROWS; j++) {
+
+            let x = i*GRIDSIZE_W;
+            let y = j*GRIDSIZE_H;
+            if(x+GRIDSIZE_W > WIDTH-(GRIDPADDING_W+GRIDPADDING_W) || y+GRIDSIZE_H > HEIGHT-(GRIDPADDING_H+GRIDPADDING_H)){
+                continue;
+            }
+            let value = getValue(i,j);
+            zones[i][j] = new QuantificationZone(p5, x, y, value);
+        }
+    }
+    p5.translate(0, 0);
+    return zones;
+}
+
+export function drawGrid(p5, zones){
+    p5.translate(GRIDPADDING_W, GRIDPADDING_H);
+    for (let i = 0; i < zones.length; i++){
+        for (let j = 0; j < zones[i].length; j++) {
+            zones[i][j].display(p5);
+        }
+    }
+    p5.translate(0, 0);
+}
+
+export function scaleCoords(x, y) {
+    return [(WIDTH*0.5 + (parseInt(x)*COORDSCALE)), (HEIGHT*0.5 + (-parseInt(y)*COORDSCALE))]
+}
 
 export function displayGuardiolaZones(p5, active){
     if(!active){ return; }
@@ -44,8 +123,53 @@ export function freeDraw(p5, active, mouseIsPressed){
     if(mouseIsPressed){
         p5.strokeWeight(3);
         p5.stroke('#ffff00');
+        p5.noFill()
         p5.smooth();
         p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
+    }
+}
+
+function pixelInPoly(verts, pos) {
+    let i, j;
+    let c=false;
+    let sides = verts.length;
+    for (i=0,j=sides-1;i<sides;j=i++) {
+        if (( ((verts[i][1] <= pos.y) && (pos.y < verts[j][1])) || ((verts[j][1] <= pos.y) && (pos.y < verts[i][1]))) &&
+            (pos.x < (verts[j][0] - verts[i][0]) * (pos.y - verts[i][1]) / (verts[j][1] - verts[i][1]) + verts[i][0])) {
+            c = !c;
+        }
+    }
+    return c;
+}
+
+
+function checkDangerZone(p5, cell){
+    let avgDangerValue = 0;
+    let count = 0;
+    for(let i = 0; i < zones.length; i++){
+        for(let j = 0; j < zones[i].length; j++){
+            if(pixelInPoly(cell, zones[i][j].pixel)){
+                count++;
+                avgDangerValue += zones[i][j].value;
+            }
+        }
+    }
+    return avgDangerValue/count;
+}
+
+
+export function displayDangerZones(p5, voronoi, active){
+    if(!active){return;}
+    for (const cell of voronoi.cellPolygons()) {
+        let danger = checkDangerZone(p5, cell);
+        if(danger >= 0.5){
+            p5.fill(p5.color(255*danger,0,0, 255*danger));
+            p5.beginShape();
+            for(let i = 0; i < cell.length; i++){
+                p5.vertex(cell[i][0], cell[i][1]);
+            }
+            p5.endShape();
+        }
     }
 }
 
@@ -62,7 +186,6 @@ export function displayVoronoi(p5, context, voronoi, delaunay, active){
         context.beginPath();
         voronoi.delaunay.renderPoints(context, 4);
         context.fill();
-    }
 
     /*if(this.show_voronoi && delaunay != null){
             for (let i = 0; i < this.state.players.length; ++i) {
@@ -85,6 +208,9 @@ export function displayVoronoi(p5, context, voronoi, delaunay, active){
             voronoi.render(context);
             context.stroke();
         }*/
+
+
+    }
 }
 
 export function displayPlayers(p5, players, trails, paused, edited){
@@ -93,6 +219,33 @@ export function displayPlayers(p5, players, trails, paused, edited){
             players[i].display(p5, trails, paused, edited);
         }
     }
+}
+
+
+
+export function isInPolygon(p5, vertices, px, py){
+    let collision = false;
+
+    // go through each of the vertices, plus
+    // the next vertex in the list
+    let next = 0;
+    for (let current=0; current<vertices.length; current++) {
+        // get next vertex in list
+        // if we've hit the end, wrap around to 0
+        next = current+1;
+        if (next === vertices.length) next = 0;
+        // get the PVectors at our current position
+        // this makes our if statement a little cleaner
+        let vc = p5.createVector(vertices[current]);    // c for "current"
+        let vn = p5.createVector(vertices[next]);       // n for "next"
+        // compare position, flip 'collision' variable
+        // back and forth
+        if (((vc.y >= py && vn.y < py) || (vc.y < py && vn.y >= py)) &&
+            (px < (vn.x-vc.x)*(py-vc.y) / (vn.y-vc.y)+vc.x)) {
+            collision = !collision;
+        }
+    }
+    return collision;
 }
 
 

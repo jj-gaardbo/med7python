@@ -1,7 +1,10 @@
+import {scaleCoords} from "./Common";
+
 export default class Ball {
     constructor(x, y, z){
-        this.x = x;
-        this.y = y;
+        let coords = scaleCoords(x, y);
+        this.x = coords[0];
+        this.y = coords[1];
         this.z = z;
         this.max = 2000;
         this.min = 0;
