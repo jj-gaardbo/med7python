@@ -1,7 +1,12 @@
 import {AWAY, HOME} from "./Constants";
 import {scaleCoords} from "./Common";
 
-const allEqual = arr => arr.every( v => v === arr[0] );
+//const allEqual = arr => arr.every( v => v === arr[0] );
+
+function allEqual(arr) {
+    if(!arr.length) return true;
+    return arr.reduce(function(a, b) {return (a === b)?a:(!b);}) === arr[0];
+}
 
 export default class Player {
     constructor(x, y, team, id, shirt){
@@ -17,11 +22,12 @@ export default class Player {
         this.is_pressed = false;
         this.edited = false;
         this.trail = [];
+        this.recentMovement = [];
         this.exclude = false;
     }
 
-    checkMovement(){
-        if(this.trail.length > 0 && allEqual(this.trail)){
+    checkMovement = function(){
+        if(this.recentMovement.length >= 20 && allEqual(this.recentMovement)){
             this.exclude = true;
         }
     }
@@ -39,6 +45,7 @@ export default class Player {
                 p5.ellipse(this.trail[i].x, this.trail[i].y, i, i);
             }
         }
+
         p5.strokeWeight(1);
         p5.stroke(255);
         if(this.team === HOME){
@@ -53,11 +60,13 @@ export default class Player {
         }
         p5.ellipse(this.x, this.y, this.r, this.r);
         p5.fill(255);
-        if(typeof this.shirtNum !== "undefined"){
-            p5.text(this.shirtNum, this.x-5, this.y+5);
-        } else {
-            p5.text(this.id, this.x-5, this.y+5);
-        }
+
+
+        p5.text(this.shirtNum, this.x-5, this.y+5);
+        p5.fill(p5.color(255,255,0));
+        p5.text(this.id, this.x-5, this.y+25);
+        p5.text(this.team, this.x-5, this.y+45);
+
     };
 
     pressing = function(p5){
@@ -86,4 +95,20 @@ export default class Player {
             return this.id;
         }
     };
+
+    update = function(data, paused, p5){
+        let coords = scaleCoords(data.x_pos, data.y_pos);
+        this.x = coords[0];
+        this.y = coords[1];
+        this.id = data.tag_id;
+        this.team = data.team;
+        this.shirtNum = data.shirt_number;
+
+        if(!paused){
+            this.recentMovement.push(""+Math.floor(this.x)+" "+Math.floor(this.y));
+            if(this.recentMovement.length >= 25){
+                this.recentMovement.shift();
+            }
+        }
+    }
 }

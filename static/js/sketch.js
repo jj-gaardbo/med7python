@@ -54,6 +54,7 @@ export default class P5Sketch extends Component {
         super(props);
         this.state = {
             players: [],
+            allSet: false,
             paused:null,
             edited: false,
             ball:null,
@@ -82,30 +83,64 @@ export default class P5Sketch extends Component {
     }
 
     setupPlayers(players){
-        this.state.players = [];
         for(let i = 0; i < players.length; i++){
-            let position = [players[i].x, players[i].y];
-            if(position[0] > (WIDTH-47) || position[0] < (47) || position[1] > (HEIGHT-47) || position[1] < (47)){
-                continue;
-            }
-            if(parseInt(players[i].shirt_number) !== -1 && (players[i].team  !== HOME || players[i].team  !== AWAY)){
+            if(this.validatePlayer(players[i])){
                 this.state.players.push(new Player(players[i].x_pos, players[i].y_pos, players[i].team, players[i].tag_id, players[i].shirt_number));
             }
-
         }
+        this.state.allSet = true;
     }
 
-    search(shirtNum, id, array){
+    search(shirtNum, id, team, array){
         for (let i=0; i < array.length; i++) {
-            if (parseInt(array[i].shirtNum) === parseInt(shirtNum) || parseInt(array[i].id) === parseInt(id)) {
+            if (array[i].team === team && (parseInt(array[i].shirtNum) === parseInt(shirtNum) || parseInt(array[i].id) === parseInt(id))) {
                 return {"index":i,"player":array[i]};
             }
         }
         return null;
     }
 
+    validatePlayer(player){
+        let isValid = true;
+
+        //Player does not have a team
+        if(!player.team.match((/^([HA])$/))){
+            isValid = false;
+        }
+
+        //Person is not a player
+        if(parseInt(player.shirt_number) === -1){
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    cleanPlayers(p5){
+        let size = this.state.players.length;
+        for(let i = 0; i < size; i++) {
+            if(typeof this.state.players[i] !== "undefined"){
+                this.state.players[i].checkMovement();
+                if (this.state.players[i].exclude) {
+                    this.state.players.splice(i, 1);
+                    continue;
+                }
+            }
+        }
+    }
+
     updatePlayers(newFramePlayers, p5, clearTrails = false){
-        this.setupPlayers(newFramePlayers);
+        this.cleanPlayers(p5);
+        for(let p = 0; p < newFramePlayers.length; p++){
+            let results = this.search(newFramePlayers[p].shirt_number, newFramePlayers[p].tag_id, newFramePlayers[p].team, this.state.players);
+            if(results){
+                this.state.players[results.index].update(newFramePlayers[p], this.state.paused);
+            } else {
+                if(this.validatePlayer(newFramePlayers[p])){
+                    this.state.players.push(new Player(newFramePlayers[p].x_pos, newFramePlayers[p].y_pos, newFramePlayers[p].team, newFramePlayers[p].tag_id, newFramePlayers[p].shirt_number));
+                }
+            }
+        }
 
         for(let i = 0; i < this.state.players.length; i++){
             this.trails.push([this.state.players[i].x, this.state.players[i].y]);
@@ -127,6 +162,10 @@ export default class P5Sketch extends Component {
 
     updatePoints(p5){
         if(this.props.current_frame === null || this.props.current_frame.length === 0){return;}
+
+        if(!this.state.allSet){
+            this.setupPlayers(this.props.current_frame.players);
+        }
 
         this.state.timestamp = parseInt(this.props.current_frame.timestamp);
         this.check_timestamp();
