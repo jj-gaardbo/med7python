@@ -35,6 +35,7 @@ buffer = 40
 frames = []
 current_frame = -1
 
+fseven_file = ""
 data_file = ""
 meta_file = ""
 video_files = []
@@ -42,6 +43,8 @@ video_files = []
 data = []
 meta_data = []
 meta_data_obj = None
+event_data = []
+event_data_obj = None
 
 half_lengths = []
 
@@ -354,7 +357,9 @@ def upload_file():
         if not os.path.isfile(filepath):
             file.save(filepath)
 
-        if filetype == "xml":
+        if "f7.xml" in filename:
+            handle_event_data(filepath, filename)
+        elif filetype == "xml":
             handle_meta_data(filepath)
         elif filetype == "dat":
             process_data(filepath, filename)
@@ -425,6 +430,103 @@ def handle_video_file(filepath, filename):
 def process_data(filepath, filename):
     data = [i.strip().split(';') for i in open(filepath).readlines()]
     clean_data(data, filepath, filename, update_meta)
+
+
+class EventData:
+    def __init__(self):
+        self.goals = []
+
+    def set_goals(self, goals):
+        self.goals = goals
+
+    def set_players(self, players):
+        print("Players")
+
+
+class TeamData:
+    def __init__(self, formation, score, side):
+        self.formation = formation
+        self.score = score
+        self.side = side
+        self.goals = []
+        self.match_players = []
+        self.substitutions = []
+        self.team = ""
+
+    def set_team(self, side):
+        if side == "Home":
+            self.team = "H"
+        elif side == "Away":
+            self.team = "A"
+
+    def set_goals(self, goals_array):
+        self.goals = goals_array
+
+    def set_match_players(self, match_player_array):
+        self.match_players = match_player_array
+
+    def set_substitutions(self, substitution_array):
+        self.substitutions = substitution_array
+
+
+class Goal:
+    def __init__(self, min, sec, type, player_ref):
+        self.min = min
+        self.sec = sec
+        self.type = type
+        self.player_ref = player_ref
+
+
+class Lineup:
+    def __init__(self, formation_place, player_ref, position, shirt_number, status):
+        self.formation_place = formation_place
+        self.player_ref = player_ref
+        self.position = position
+        self.shirt_number = shirt_number
+        self.status = status
+
+
+class Substitution:
+    def __init__(self, min, period, reason, sec, sub_off, sub_on, substitute_position):
+        self.min = min
+        self.period = period
+        self.reason = reason
+        self.sec = sec
+        self.sub_off = sub_off
+        self.sub_on = sub_on
+        self.substitute_position = substitute_position
+
+
+def handle_event_data(filepath, filename):
+    global event_data, event_data_obj
+    event_data_obj = EventData()
+    player_document = minidom.parse(filepath)
+
+    team_data_array = []
+    team_data = player_document.getElementsByTagName("TeamData")
+
+    for team in team_data:
+        side = team.attributes['Side'].value
+        temp = TeamData(team.attributes['Formation'].value, team.attributes['Score'].value, side)
+        temp.set_team(side)
+
+        goals_array = []
+        lineup_array = []
+        substitution_array = []
+        for goal in team.getElementsByTagName("Goal"):
+            goals_array.append(Goal(goal.attributes["Min"].value, goal.attributes["Sec"].value, goal.attributes["Type"].value, goal.attributes["PlayerRef"].value))
+
+        temp.set_goals(goals_array)
+        for match_player in team.getElementsByTagName("MatchPlayer"):
+            lineup_array.append(Lineup(match_player.attributes["Formation_Place"].value, match_player.attributes["PlayerRef"].value, match_player.attributes["Position"].value, match_player.attributes["ShirtNumber"].value, match_player.attributes["Status"]))
+
+        temp.set_match_players(lineup_array)
+        for substitution in team.getElementsByTagName("Substitution"):
+            substitution_array.append(Substitution(substitution.attributes["Min"].value, substitution.attributes["Period"].value, substitution.attributes["Reason"].value, substitution.attributes["Sec"].value, substitution.attributes["SubOff"], substitution.attributes["SubOn"], substitution.attributes["SubstitutePosition"]))
+
+        temp.set_substitutions(substitution_array)
+        team_data_array.append(temp)
+
 
 
 if __name__ == "__main__":
