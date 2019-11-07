@@ -9,17 +9,19 @@ import time
 from tqdm import tqdm
 from xml.dom import minidom
 from werkzeug.utils import secure_filename
-from flask import Flask, request, render_template, jsonify, flash, redirect, url_for
+from flask import Flask, request, render_template, jsonify, flash, redirect, url_for, stream_with_context, Response
 import webbrowser
 from threading import Timer
 from dateutil.parser import parse
 import datetime
 
 UPLOAD_FOLDER = './uploads'
-ALLOWED_EXTENSIONS = {'dat', 'xml'}
+STATIC_FOLDER = '../static/dist/static'
+ALLOWED_EXTENSIONS = {'dat', 'xml', 'mp4'}
 
 app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['STATIC_FOLDER'] = STATIC_FOLDER
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
 
@@ -35,10 +37,18 @@ current_frame = -1
 
 data_file = ""
 meta_file = ""
+video_files = []
 
 data = []
 meta_data = []
 meta_data_obj = None
+
+half_lengths = []
+
+period_1_length = 0
+period_2_length = 0
+period_3_length = 0
+period_4_length = 0
 
 
 def scale_coords(x, y):
@@ -106,6 +116,11 @@ class DataStruct():
         self.players = []
         self.time = 0,
         self.period = 0
+        self.seconds = 0
+        self.period_seconds = 0
+        self.period_frame = 0
+        self.frame = 0
+        self.fps = 0
 
     def set_players(self, players):
         for i in range(len(players)):
@@ -114,9 +129,14 @@ class DataStruct():
     def set_ball(self):
         self.ball = Ball(self.ball)
 
-    def set_time(self, second, period):
+    def set_time(self, second, period, period_seconds, period_frame, frame, fps):
         self.period = period
         self.time = str(datetime.timedelta(seconds=second))
+        self.seconds = second+(fps*0.04)
+        self.period_seconds = period_seconds+(fps*0.04)
+        self.frame = frame
+        self.period_frame = period_frame
+        self.fps = fps
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__,sort_keys=True, indent=4)
@@ -164,11 +184,26 @@ def in_periods(timestamp):
     return False, -1, -1
 
 
+def increment_period_frame(period_no):
+    global period_1_length, period_2_length, period_3_length, period_4_length
+    if period_no == 1:
+        period_1_length = period_1_length + 1
+    elif period_no == 2:
+        period_2_length = period_2_length + 1
+    elif period_no == 3:
+        period_3_length = period_3_length + 1
+    elif period_no == 4:
+        period_4_length = period_4_length + 1
+
+
 def clean_data(data, filepath, filename, callback=None):
     global current_frame, meta_data_obj, progress_str, meta_data, progress_percentage
     iter = 0
+    period_iter = 0
     seconds = 0
-    # 2700 second = 45 minutes
+    period_seconds = 0
+    fps = 0
+
     for i in range(len(data)):
         temp = re.split('[:]', data[i][0])
         in_period, period_start_no, period_no = in_periods(temp[0])
@@ -179,15 +214,26 @@ def clean_data(data, filepath, filename, callback=None):
         data[i].insert(1, temp[1])
         del data[i][len(data[i]) - 1]
         frame = DataStruct(iter, data[i][0], data[i][len(data[i])-1])
+
         if period_no == 2 and int(period_start_no) == int(temp[0]):
+            period_seconds = 0
+            period_iter = 0
             seconds = 2700
         elif period_no == 3 and int(period_start_no) == int(temp[0]):
+            period_seconds = 0
+            period_iter = 0
             seconds = 5400
         elif period_no == 4 and int(period_start_no) == int(temp[0]):
+            period_seconds = 0
+            period_iter = 0
             seconds = 6300
+
         if iter % 25 == 0:
             seconds = seconds+1
-        frame.set_time(seconds, period_no)
+            period_seconds = period_seconds + 1
+            fps = 0
+
+        frame.set_time(seconds, period_no, period_seconds, period_iter, iter, fps)
         del data[i][0]
         del data[i][len(data[i]) - 1]
         frame.set_ball()
@@ -196,13 +242,10 @@ def clean_data(data, filepath, filename, callback=None):
         meta_data_obj.place_start_periods(int(current_frame.timestamp), iter)
         frames.append(frame.toJSON())
         iter = iter+1
-        #progress_str = "Processing: "+str(i)+" / "+str(len(data))+" - "+str(round(i/len(data)*100))+"%"
+        period_iter = iter+1
+        fps = fps+1
+        increment_period_frame(period_no)
         progress_percentage = [i, len(data), int(round(i/len(data)*100))]
-        #print('\r', progress_str, end='')
-
-    #filepath = os.path.join(app.config['UPLOAD_FOLDER'], str(filename.split(".")[0])+".processed.json")
-    #with open(filepath, 'w') as json_file:
-    #    json.dump(frames, json_file, separators=(',', ':'))
 
     if callback:
         callback()
@@ -239,11 +282,23 @@ def check_file_type(filename):
     elif filename.rsplit('.', 1)[1].lower() == "dat":
         data_file = UPLOAD_FOLDER+"/"+filename
         return "dat"
+    elif filename.rsplit('.', 1)[1].lower() == "mp4":
+        return "mp4"
 
 
 @app.route("/data_length")
 def data_length():
     return str(len(frames))
+
+
+@app.route("/period_length")
+def period_length():
+    return jsonify([period_1_length, period_2_length, period_3_length, period_4_length])
+
+
+@app.route("/video_details")
+def video_details():
+    return jsonify(video_files)
 
 
 @app.route("/data")
@@ -284,13 +339,21 @@ def upload_file():
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
+        filetype = check_file_type(filename)
+
+        if filetype == 'mp4':
+            filepath = os.path.join(app.config['STATIC_FOLDER'], filename)
+
         if not os.path.isfile(filepath):
             file.save(filepath)
 
-        if check_file_type(filename) == "xml":
+        if filetype == "xml":
             handle_meta_data(filepath)
-        else:
+        elif filetype == "dat":
             process_data(filepath, filename)
+        elif filetype == "mp4":
+            handle_video_file(filepath, filename)
+
         return redirect(url_for('uploaded_file', filename=filename))
 
 
@@ -346,6 +409,10 @@ def handle_meta_data(filename):
     meta.set_periods(meta_doc.getElementsByTagName("period"))
     meta_data_obj = meta
     meta_data = meta.toJSON()
+
+
+def handle_video_file(filepath, filename):
+    video_files.append([filename, filepath])
 
 
 def process_data(filepath, filename):

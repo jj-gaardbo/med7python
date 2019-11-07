@@ -103,7 +103,7 @@ export default class Player {
         this.id = data.tag_id;
         this.team = data.team;
         this.shirtNum = data.shirt_number;
-
+ 
         if(!paused){
             this.recentMovement.push(""+Math.floor(this.x)+" "+Math.floor(this.y));
             if(this.recentMovement.length >= 25){

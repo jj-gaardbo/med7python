@@ -72,8 +72,73 @@ html, body{
 }
 
 canvas{
-    margin: 0 auto;
+    top: 40px;
+    left: 50%;
+    margin-left: -680px;
+    position: absolute;
     background-image: url("../images/pitch.png");
+    transition: all 0.5s ease-in;
+}
+
+button.fullscreen{
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+}
+
+.timeline-controls{
+    position: relative;
+    top: 0;
+    left: 0;
+    z-index: 999;
+}
+
+.video-container{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%!important;
+    height: 100vh!important;
+}
+
+.video-container label{
+    display:none;
+    float: left;
+    margin-top: 60px;
+    padding: 20px;
+}
+
+.minify .video-container label{
+    display:block;
+}
+
+.video-container>div{
+    width: 100%!important;
+    height: 100%!important;
+    position: relative;
+    left:0;
+    overflow: hidden;
+}
+
+video{
+    width: 100%!important;
+    height: auto!important;
+    left: 0;
+    position: absolute;
+    transition: all 0.5s ease-in;
+    opacity: 0;
+    top: 100px;
+}
+
+.minify video{
+    opacity: 1;
+}
+
+.minify canvas{
+    left: calc(100vw - 492px);
+    transform: scale(0.7);
+    top: 50%;
+    margin-top: -439px;
 }
 
 .freehand-sketch canvas{

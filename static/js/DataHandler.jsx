@@ -16,10 +16,11 @@ export default class DataHandler extends React.Component {
             x: 0,
             percentage: 0,
             intervalID: 0,
-            timeout: 39,
+            timeout: 32,
             skip_frames: 1,
             meta: null,
-            period_pos: ""
+            period_pos: "",
+            video_details: ""
         };    // This binding is necessary to make `this` work in the callback
 
         this.getPythonData = this.getPythonData.bind(this);
@@ -28,6 +29,7 @@ export default class DataHandler extends React.Component {
         this.getTimeFrameFwdRew = this.getTimeFrameFwdRew.bind(this);
         this.getPythonMetaData = this.getPythonMetaData.bind(this);
         this.getProgress = this.getProgress.bind(this);
+        this.getVideoDetails = this.getVideoDetails.bind(this);
 
         this.play = this.play.bind(this);
         this.pause = this.pause.bind(this);
@@ -44,10 +46,9 @@ export default class DataHandler extends React.Component {
         this.pause();
         let self = this;
         let frameToFind = Math.round(this.state.dataLength / 100 * this.state.percentage);
-
         $.get(window.location.href + 'data?frame='+frameToFind, (data) => {
             this.setState({data: data});
-            this.props.callback(data, this.state.frame);
+            this.props.callback(data, this.state.frame, true);
             if(this.state.paused){
                 this.props.pauseCallback(true, true);
             }
@@ -64,7 +65,7 @@ export default class DataHandler extends React.Component {
 
         $.get(window.location.href + 'data?frame='+frameToFind, (data) => {
             this.setState({data: data});
-            this.props.callback(data, this.state.frame);
+            this.props.callback(data, this.state.frame, true);
             if(this.state.paused){
                 this.props.pauseCallback(true, true);
             }
@@ -93,10 +94,23 @@ export default class DataHandler extends React.Component {
 
         $.get(window.location.href + 'data?frame='+frame, (data) => {
             this.setState({data: data});
-            this.props.callback(data, this.state.frame);
+            this.props.callback(data, this.state.frame, false);
         }).done(function() {
             self.setState({frame: frame+self.state.skip_frames});
         });
+    }
+
+    getVideoDetails(){
+        if(this.state.video_details === ""){
+            $.get(window.location.href + 'video_details', (details) => {
+                this.setState({video_details: details});
+                this.props.videocallback(details);
+            });
+            $.get(window.location.href + 'period_length', (resp) => {
+                this.setState({period_lengths: resp});
+                this.props.videoperiodcallback(resp);
+            });
+        }
     }
 
     getProgress(){
@@ -157,6 +171,7 @@ export default class DataHandler extends React.Component {
 
     componentDidMount() {
         this.getPythonMetaData()
+        this.getVideoDetails()
     }
 
     render () {

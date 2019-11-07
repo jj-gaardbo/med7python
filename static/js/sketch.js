@@ -141,11 +141,6 @@ export default class P5Sketch extends Component {
                 }
             }
         }
-
-        for(let i = 0; i < this.state.players.length; i++){
-            this.trails.push([this.state.players[i].x, this.state.players[i].y]);
-            if(this.trails.length >= 880) this.trails.shift();
-        }
     }
 
     check_timestamp(){
@@ -305,7 +300,11 @@ export default class P5Sketch extends Component {
 
     draw = p5 => {
         if(this.bg && !this.free_draw){
-            p5.background(this.bg);
+            //p5.background(this.bg);
+        }
+
+        if(!this.free_draw){
+            p5.clear();
         }
 
         this.updatePoints(p5);
