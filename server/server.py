@@ -148,6 +148,7 @@ class MetaData:
         self.date = date
         self.periods = {}
         self.start_periods = []
+        self.video_details = []
 
     def place_start_periods(self, timestamp, iterator):
         periods = self.get_periods()
@@ -164,6 +165,11 @@ class MetaData:
                int(self.periods['2']['start_frame']), int(self.periods['2']['end_frame']),
                int(self.periods['3']['start_frame']), int(self.periods['3']['end_frame']),
                int(self.periods['4']['start_frame']), int(self.periods['4']['end_frame'])]
+
+    def assign_videos(self):
+        if len(video_files) == 0:
+            return
+        self.video_details = video_files
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__,sort_keys=True, indent=4)
@@ -197,7 +203,7 @@ def increment_period_frame(period_no):
 
 
 def clean_data(data, filepath, filename, callback=None):
-    global current_frame, meta_data_obj, progress_str, meta_data, progress_percentage
+    global current_frame, meta_data_obj, progress_str, meta_data, progress_percentage, match_id
     iter = 0
     period_iter = 0
     seconds = 0
@@ -240,6 +246,7 @@ def clean_data(data, filepath, filename, callback=None):
         current_frame = frame
         frame.set_players(data[i])
         meta_data_obj.place_start_periods(int(current_frame.timestamp), iter)
+        meta_data_obj.assign_videos()
         frames.append(frame.toJSON())
         iter = iter+1
         period_iter = iter+1
@@ -412,7 +419,7 @@ def handle_meta_data(filename):
 
 
 def handle_video_file(filepath, filename):
-    video_files.append([filename, filepath])
+    video_files.append([filename.rsplit('.', 1)[0].lower(), filename, filepath])
 
 
 def process_data(filepath, filename):

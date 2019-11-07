@@ -17,7 +17,8 @@ export default class App extends React.Component {
         this.state = {
             playing: false,
             playbackRate: 0.75,
-            timeout:2000,
+            currentVideo: "",
+            timeout:5000,
             finetune:0,
             current_frame: null,
             frame_index: 0,
@@ -69,7 +70,14 @@ export default class App extends React.Component {
         this.setState({playbackRate:e.target.value})
     }
 
+    handleResyncRate = (e) => {
+        this.stopVideo();
+        this.setState({timeout:e.target.value})
+        this.playVideo();
+    }
+
     seekVideo(){
+        if(this.state.paused){return};
         this.player.seekTo(parseFloat(this.state.current_frame.period_seconds+parseInt(this.state.finetune)),'seconds');
     }
 
@@ -90,15 +98,21 @@ export default class App extends React.Component {
 
         if(timeline){
             this.stopVideo();
-            console.log("Stopping")
         }
         else if(this.state.has_video){
             this.playVideo();
         }
     };
 
+    handleVideoFilename(){
+        this.state.currentVideo = this.state.meta_data.match_id+"_"+this.state.current_frame.period+".mp4";
+    }
+
     playVideo(){
+        this.handleVideoFilename();
+
         if(this.state.playing){return;}
+
         this.setState({intervalID: setInterval(this.seekVideo, this.state.timeout),playing:true})
     }
 
@@ -109,6 +123,7 @@ export default class App extends React.Component {
 
     handlePause = (paused, newframe=false) => {
         this.setState({paused:paused,playing:false})
+        this.stopVideo();
         if(newframe){
             this.setState({newframe:newframe})
         }
@@ -182,23 +197,29 @@ export default class App extends React.Component {
                                     {this.state.has_video &&
                                         <div className={"video-container"}>
                                             <label htmlFor="finetunerange">
-                                                Seconds
-                                                <input id="finetunerange" type="range" min={-4} max={4} step={1} value={this.state.finetune} onChange={this.handleFineTune}/>
-                                                <p>{this.state.finetune}</p>
+                                                Playback offset
+                                                <input id="finetunerange" type="range" min={-4} max={4} step={0.01} value={this.state.finetune} onChange={this.handleFineTune}/>
+                                                <p>{this.state.finetune} sec.</p>
                                             </label>
 
                                             <label htmlFor="playbackrate">
                                                 Playback rate
                                                 <input id="playbackrate" type="range" min={0} max={2} step={0.01} value={this.state.playbackRate} onChange={this.handlePlaybackRate}/>
-                                                <p>{this.state.playbackRate}</p>
+                                                <p>{this.state.playbackRate} speed</p>
+                                            </label>
+
+                                            <label htmlFor="resyncrate">
+                                                Resync rate
+                                                <input id="resyncrate" type="range" min={0} max={10000} step={1000} value={this.state.timeout} onChange={this.handleResyncRate}/>
+                                                <p>{this.state.timeout/1000} sec.</p>
                                             </label>
                                             <ReactPlayer
                                                 width={"100%"}
                                                 ref={this.ref}
-                                                url={'./dist/static/'+this.state.video_details[0][0]}
+                                                url={'./dist/static/'+this.state.currentVideo}
                                                 onSeek={e => console.log('onSeek', e)}
-                                                playing={this.state.playing}
-                                                playbackRate={this.state.playbackRate}
+                                                playing={!this.state.paused}
+                                                playbackRate={parseFloat(this.state.playbackRate)}
                                             />
                                         </div>
                                     }

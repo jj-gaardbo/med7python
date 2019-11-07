@@ -11,7 +11,7 @@ import {
     displayConvexHull, displayDangerZones,
     displayDist,
     displayGuardiolaZones,
-    displayPlayers, displayTrail,
+    displayPlayers,
     displayVoronoi, drawGrid,
     freeDraw, scaleCoords, setupGrid
 } from "./Common";
@@ -93,7 +93,7 @@ export default class P5Sketch extends Component {
 
     search(shirtNum, id, team, array){
         for (let i=0; i < array.length; i++) {
-            if (array[i].team === team && (parseInt(array[i].shirtNum) === parseInt(shirtNum) || parseInt(array[i].id) === parseInt(id))) {
+            if ( array[i].team === team && parseInt(array[i].shirtNum) === parseInt(shirtNum) ) {
                 return {"index":i,"player":array[i]};
             }
         }
@@ -130,7 +130,6 @@ export default class P5Sketch extends Component {
     }
 
     updatePlayers(newFramePlayers, p5, clearTrails = false){
-        this.cleanPlayers(p5);
         for(let p = 0; p < newFramePlayers.length; p++){
             let results = this.search(newFramePlayers[p].shirt_number, newFramePlayers[p].tag_id, newFramePlayers[p].team, this.state.players);
             if(results){
