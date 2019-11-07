@@ -94,6 +94,7 @@ export default class App extends React.Component {
             }
             this.setState({ball_action: parsed.ball.action});
         }
+
         this.setState({current_frame:parsed,status:parsed.ball.status,possession:parsed.ball.possession, time:parsed.time, frame_index: index});
 
         if(timeline){

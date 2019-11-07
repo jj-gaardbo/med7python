@@ -82,8 +82,12 @@ class ReactFileDrop extends React.Component {
         return (
             <div id="react-file-drop">
                 <FileDrop onDrop={this.handleDrop}>
-                    <p>1. Drop .xml meta file here first <br/>
-                    2. Drop .dat data file here afterwards</p>
+
+                    <p>
+                        1. Drop .mp4 video file for each half<br/>
+                        2. Drop .xml meta file<br/>
+                        3. Drop .dat data file
+                    </p>
                     <progress className={"upload-progress hidden"}></progress>
                     {!this.state.files_recieved &&
                     <button className={"freehand btn btn-primary"} onClick={this.props.freehandSketch}><i className="fa fa-edit"></i>Free hand</button>

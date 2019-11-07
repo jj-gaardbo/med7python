@@ -61,12 +61,10 @@ export default class Player {
         p5.ellipse(this.x, this.y, this.r, this.r);
         p5.fill(255);
 
-
         p5.text(this.shirtNum, this.x-5, this.y+5);
-        p5.fill(p5.color(255,255,0));
+        /*p5.fill(p5.color(255,255,0));
         p5.text(this.id, this.x-5, this.y+25);
-        p5.text(this.team, this.x-5, this.y+45);
-
+        p5.text(this.team, this.x-5, this.y+45);*/
     };
 
     pressing = function(p5){
