@@ -326,6 +326,8 @@ def trail_data():
 
 @app.route("/teams")
 def teams():
+    if len(team_data_array) == 0:
+        return "-1"
     return jsonify(team_data_array)
 
 
@@ -393,8 +395,18 @@ def shutdown_server():
     func()
 
 
+def clear_files():
+    filelist = [f for f in os.listdir(UPLOAD_FOLDER) if f.endswith(".xml") or f.endswith(".dat")]
+    for f in filelist:
+        os.remove(os.path.join(UPLOAD_FOLDER, f))
+    videolist = [f for f in os.listdir(STATIC_FOLDER) if f.endswith(".mp4")]
+    for f in videolist:
+        os.remove(os.path.join(STATIC_FOLDER, f))
+
+
 @app.route('/terminate', methods=['POST'])
 def terminate():
+    clear_files()
     shutdown_server()
     return 'Server shutting down...'
 
@@ -512,7 +524,6 @@ class Team:
         self.reference = reference
         self.side = side
         self.team_letter = ""
-        self.team_name = ""
         self.events = 0
         self.players = []
         self.color_primary = ""
@@ -542,6 +553,9 @@ class Team:
     def add_player(self, player):
         self.players.append(player)
 
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__,sort_keys=True, indent=4)
+
 
 class Player_Detail:
     def __init__(self, first_name, last_name, known_name, shirt_number, player_reference, position, formation_place, status):
@@ -555,68 +569,73 @@ class Player_Detail:
         self.status = status
 
 
-
 def handle_event_data(filepath, filename):
     global team_data_array
 
-    #player_document = ET.parse(filepath).getroot()
+    player_document = ET.parse(filepath).getroot()
 
-    player_document = minidom.parse(filepath)
-
-    team_data = player_document.getElementsByTagName("TeamData")
-
-    for team_event in team_data:
-        side = team_event.attributes['Side'].value
-        reference = team_event.attributes['TeamRef'].value
+    for team_event in player_document.iter('TeamData'):
+        side = team_event.get('Side')
+        reference = team_event.get('TeamRef')
         team = Team(reference, side)
         team.set_team(side)
 
-        temp = TeamData(team_event.attributes['Formation'].value, team_event.attributes['Score'].value, side, reference)
+        temp = TeamData(team_event.get('Formation'), team_event.get('Score'), side, reference)
 
         booking_array = []
         goals_array = []
         lineup_array = []
         substitution_array = []
-        for booking in team_event.getElementsByTagName("Booking"):
-            booking_array.append(Booking(booking.attributes["Card"], booking.attributes["CardType"], booking.attributes["Min"], booking.attributes["Sec"], booking.attributes["PlayerRef"], booking.attributes["Reason"]))
+        for booking in team_event.iter("Booking"):
+            booking_array.append(Booking(booking.get("Card"), booking.get("CardType"), booking.get("Min"), booking.get("Sec"), booking.get("PlayerRef"), booking.get("Reason")))
 
         temp.set_bookings(booking_array)
-        for goal in team_event.getElementsByTagName("Goal"):
-            goals_array.append(Goal(goal.attributes["Min"].value, goal.attributes["Sec"].value, goal.attributes["Type"].value, goal.attributes["PlayerRef"].value))
+        for goal in team_event.iter("Goal"):
+            goals_array.append(Goal(goal.get("Min"), goal.get("Sec"), goal.get("Type"), goal.get("PlayerRef")))
 
         temp.set_goals(goals_array)
-        for match_player in team_event.getElementsByTagName("MatchPlayer"):
-            lineup_array.append(Lineup(match_player.attributes["Formation_Place"].value, match_player.attributes["PlayerRef"].value, match_player.attributes["Position"].value, match_player.attributes["ShirtNumber"].value, match_player.attributes["Status"]))
+        for match_player in team_event.iter("MatchPlayer"):
+            lineup_array.append(Lineup(match_player.get("Formation_Place"), match_player.get("PlayerRef"), match_player.get("Position"), match_player.get("ShirtNumber"), match_player.get("Status")))
 
         temp.set_match_players(lineup_array)
-        for substitution in team_event.getElementsByTagName("Substitution"):
-            substitution_array.append(Substitution(substitution.attributes["Min"].value, substitution.attributes["Period"].value, substitution.attributes["Reason"].value, substitution.attributes["Sec"].value, substitution.attributes["SubOff"], substitution.attributes["SubOn"], substitution.attributes["SubstitutePosition"]))
+        for substitution in team_event.iter("Substitution"):
+            substitution_array.append(Substitution(substitution.get("Min"), substitution.get("Period"), substitution.get("Reason"), substitution.get("Sec"), substitution.get("SubOff"), substitution.get("SubOn"), substitution.get("SubstitutePosition")))
 
         temp.set_substitutions(substitution_array)
 
         team.set_events(temp)
 
-        for team_elem in player_document.getElementsByTagName("Team"):
-            if not str(team_elem.attributes['uID'].value) == str(reference):
+        for team_elem in player_document.iter("Team"):
+            if not str(team_elem.get('uID')) == str(reference):
                 continue
 
-            team.set_country(team_elem.getElementsByTagName("Country"))
+            kit = team_elem.find('Kit')
+            if kit:
+                team.set_colors(kit.get("colour1"), kit.get("colour2"))
 
-            team.set_name(team_elem.getElementsByTagName('Name')[0].firstChild.nodeValue)
+            team.set_country(team_elem.find("Country").text)
 
-            for player in team_elem.getElementsByTagName("Player"):
-                first_name = player.getElementsByTagName('First')[0].firstChild.nodeValue
-                last_name = player.getElementsByTagName('Last')[0].firstChild.nodeValue
+            team.set_name(team_elem.find('Name').text)
+
+            for player in team_elem.findall("Player"):
+                first_name = ""
+                last_name = ""
                 known_name = ""
-                if player.getElementsByTagName('Known'):
-                    known_name = player.getElementsByTagName('Known')[0].firstChild.nodeValue
+                for names in player.find("PersonName"):
+                    if names.tag == "First":
+                        first_name = names.text
+                    elif names.tag == "Last":
+                        last_name = names.text
+                    elif names.tag == 'Known':
+                        known_name = names.text
 
-                line_up_player = temp.get_match_player(player.attributes['uID'].value)
-                player_detail_obj = Player_Detail(first_name, last_name, known_name, line_up_player.shirt_number, player.attributes['uID'].value, player.attributes['Position'].value, line_up_player.formation_place, line_up_player.status)
+                line_up_player = temp.get_match_player(player.get('uID'))
+                player_detail_obj = Player_Detail(first_name, last_name, known_name, line_up_player.shirt_number, player.get('uID'), player.get('Position'), line_up_player.formation_place, line_up_player.status)
                 team.add_player(player_detail_obj)
 
-        team_data_array.append(team)
+        team_data_array.append(team.toJSON())
 
 
 if __name__ == "__main__":
+    clear_files()
     run_app()

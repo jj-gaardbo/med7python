@@ -14,6 +14,7 @@ export default class SideBar extends React.Component {
             show_voronoi : false,
             show_voronoi_danger: false,
             show_convex : false,
+            show_convex_exclude_keeper: false,
             show_convexH : false,
             show_convexA : false,
             show_cuardiola: false,
@@ -30,6 +31,7 @@ export default class SideBar extends React.Component {
         this.toggleVoronoi = this.toggleVoronoi.bind(this);
         this.toggleVoronoiDanger = this.toggleVoronoiDanger.bind(this);
         this.toggleConvex = this.toggleConvex.bind(this);
+        this.toggleExcludeKeeper = this.toggleExcludeKeeper.bind(this);
         this.toggleConvexH = this.toggleConvexH.bind(this);
         this.toggleConvexA = this.toggleConvexA.bind(this);
         this.toggleGuardiola = this.toggleGuardiola.bind(this);
@@ -93,7 +95,12 @@ export default class SideBar extends React.Component {
     }
 
     toggleConvex(){
-        this.state.show_convex = !this.state.show_convex;
+        this.setState({show_convex: !this.state.show_convex})
+        this.props.callback(this.state);
+    }
+
+    toggleExcludeKeeper(){
+        this.state.show_convex_exclude_keeper = !this.state.show_convex_exclude_keeper;
         this.props.callback(this.state);
     }
 
@@ -175,6 +182,12 @@ export default class SideBar extends React.Component {
                     Distances
                 </button>
 
+                <hr/>
+
+                <button className={"btn btn-block menu "+ (this.state.show_convex_exclude_keeper ? "btn-primary":"btn-info")} onClick={ this.toggleExcludeKeeper }>
+                    Exclude keeper
+                </button>
+
                 <button className={"btn btn-block menu "+ (this.state.show_voronoi ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoi }>
                     <i className="fas fa-gem"></i>
                     Voronoi (V)
@@ -199,6 +212,8 @@ export default class SideBar extends React.Component {
                     <i className="fas fa-draw-polygon"></i>
                     (Away) Convex hull (A)
                 </button>
+
+                <hr/>
 
                 <button className={"btn btn-block menu "+ (this.state.show_guardiola ? "btn-primary":"btn-secondary")} onClick={ this.toggleGuardiola }>
                     <i className="fas fa-th"></i>

@@ -35,6 +35,7 @@ class ReactFileDrop extends React.Component {
     };
 
     getUploadProgress(){
+        if(this.state.data_processed && this.state.files_recieved){return;}
         $.get(window.location.href + 'progress', (status) => {
             if(status.length !== 0){
                 this.setState({processing: status});

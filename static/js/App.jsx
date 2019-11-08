@@ -42,7 +42,8 @@ export default class App extends React.Component {
                 set_away: 0,
                 set_home: 0
             },
-            intervalID:0
+            intervalID:0,
+            team_data: []
         };
 
         this.openFreeHandSketch = this.openFreeHandSketch.bind(this);
@@ -79,6 +80,12 @@ export default class App extends React.Component {
     seekVideo(){
         if(this.state.paused){return};
         this.player.seekTo(parseFloat(this.state.current_frame.period_seconds+parseInt(this.state.finetune)),'seconds');
+    }
+
+    handleTeams = (teamData) => {
+        if(teamData.length > 0){
+            this.setState({team_data: teamData})
+        }
     }
 
     handleChange = (frameData, index, timeline = false) => {
@@ -164,6 +171,7 @@ export default class App extends React.Component {
     };
 
     componentDidMount() {
+        $(document).keydown(function(e){if(e.which === 32) e.preventDefault();});
         this.checkIfServerHasData()
     }
 
@@ -188,7 +196,7 @@ export default class App extends React.Component {
                         <ReactFileDrop callback={this.handleFileUploaded} freehandSketch={this.openFreeHandSketch}></ReactFileDrop>
                     ) : (
                         <div className='header-contents'>
-                            <DataHandler callback={this.handleChange} metaCallback={this.handleMeta} pauseCallback={this.handlePause} videocallback={this.handleVideos} videoperiodcallback={this.handlePeriodLengths}/>
+                            <DataHandler teamscallback={this.handleTeams} callback={this.handleChange} metaCallback={this.handleMeta} pauseCallback={this.handlePause} videocallback={this.handleVideos} videoperiodcallback={this.handlePeriodLengths}/>
                             {this.state.meta_data !== null &&
                                 <div>
                                     <span className={"time"}>
@@ -225,7 +233,7 @@ export default class App extends React.Component {
                                         </div>
                                     }
                                     
-                                    <P5Sketch meta_data={this.state.meta_data} frame_index={this.state.frame_index} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
+                                    <P5Sketch team_data={this.state.team_data} meta_data={this.state.meta_data} frame_index={this.state.frame_index} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
                                 </div>
                             }
                             <div className="match-details hidden">

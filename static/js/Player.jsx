@@ -9,7 +9,7 @@ function allEqual(arr) {
 }
 
 export default class Player {
-    constructor(x, y, team, id, shirt){
+    constructor(x, y, team, id, shirt, teamDetails, color1, color2){
         let coords = scaleCoords(x, y);
         this.x = coords[0];
         this.y = coords[1];
@@ -20,10 +20,30 @@ export default class Player {
         this.is_clicked = false;
         this.is_dragged = false;
         this.is_pressed = false;
+        this.is_hovered = false;
         this.edited = false;
         this.trail = [];
         this.recentMovement = [];
         this.exclude = false;
+        this.firstname = "";
+        this.lastname = "";
+        this.knownname = "";
+        this.ref = "";
+        this.position = "";
+        this.status = "";
+        this.color1 = "";
+        this.color2 = "";
+        if(typeof teamDetails !== "undefined" && teamDetails !== ""){
+            this.firstname = teamDetails.first_name;
+            this.lastname = teamDetails.last_name;
+            this.knownname = teamDetails.known_name;
+            this.ref = teamDetails.player_reference;
+            this.position = teamDetails.position;
+            this.status = teamDetails.status;
+        }
+
+        if(color1 !== ""){this.color1 = color1}
+        if(color2 !== null){this.color2 = color2}
     }
 
     checkMovement = function(){
@@ -47,24 +67,51 @@ export default class Player {
         }
 
         p5.strokeWeight(1);
-        p5.stroke(255);
-        if(this.team === HOME){
+        if(this.position === "Goalkeeper") {
+            p5.stroke("#000000");
+            p5.fill("#ffff00")
+        }
+        else if(this.color1 !== ""){
+            p5.noStroke();
+            p5.fill(this.color1);
+            if(this.color2 !== ""){
+                p5.stroke(this.color2);
+            }
+        }
+        else if(this.team === HOME){
             p5.fill("blue")
         }
         else if(this.team === AWAY){
             p5.fill("red")
         }
-        else {
-            p5.noStroke();
-            p5.fill("#00000011")
-        }
-        p5.ellipse(this.x, this.y, this.r, this.r);
-        p5.fill(255);
 
-        p5.text(this.shirtNum, this.x-5, this.y+5);
+        p5.textAlign(p5.LEFT);
+        p5.ellipse(this.x, this.y, this.r, this.r);
+        p5.strokeWeight(2);
+        p5.stroke(255);
+        p5.fill(255);
+        p5.text(this.shirtNum, this.x-6, this.y+4);
+        p5.strokeWeight(1);
+        p5.stroke(0);
+        p5.fill(0);
+        p5.text(this.shirtNum, this.x-6, this.y+5);
         /*p5.fill(p5.color(255,255,0));
         p5.text(this.id, this.x-5, this.y+25);
         p5.text(this.team, this.x-5, this.y+45);*/
+
+        if(this.is_hovered){
+            p5.textAlign(p5.CENTER);
+            p5.text(this.firstname + " " + this.lastname, this.x-6, this.y+25);
+            p5.text(this.position, this.x-6, this.y+45);
+        }
+    };
+
+    hover = function(p5){
+        if(p5.mouseX > this.x-this.r+5 && p5.mouseX < this.x + this.r+5 && p5.mouseY > this.y-this.r+5 && p5.mouseY < this.y + this.r+5){
+            this.is_hovered = true;
+        } else {
+            this.is_hovered = false;
+        }
     };
 
     pressing = function(p5){

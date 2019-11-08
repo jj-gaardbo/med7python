@@ -35,6 +35,7 @@ export default class P5Sketch extends Component {
     show_convex_hull = false;
     show_convex_hull_h = false;
     show_convex_hull_a = false;
+    show_convex_hull_exclude = false;
     show_guardiola = false;
     show_dist = false;
     free_draw = false;
@@ -67,7 +68,8 @@ export default class P5Sketch extends Component {
             period:0,
             dist_players: [],
             mouseIsPressed: false,
-            zones: []
+            zones: [],
+            team_data: []
         }
     }
 
@@ -76,16 +78,41 @@ export default class P5Sketch extends Component {
     };
 
     componentDidUpdate(prevProps, prevState, snapshot) {
+        if(this.state.team_data.length === 0){
+            this.state.team_data = this.props.team_data
+        }
         this.updatePoints();
         if(!this.state.paused){
             this.free_draw = false;
         }
     }
 
+    getPlayerTeam(teamLetter){
+        if(this.state.team_data.length === 0){ return; }
+        for(let i = 0; i<this.state.team_data.length;i++){
+            if(this.state.team_data[i].team_letter === teamLetter){
+                return this.state.team_data[i];
+            }
+        }
+        return []
+    }
+
+    getPlayerDetails(shirtNumber, team){
+        if(team.length === 0){return []}
+        for(let j = 0; j<team.players.length;j++){
+            let player = team.players[j];
+            if(parseInt(player.shirt_number) === parseInt(shirtNumber)){
+                return player;
+            }
+        }
+    }
+
     setupPlayers(players){
         for(let i = 0; i < players.length; i++){
             if(this.validatePlayer(players[i])){
-                this.state.players.push(new Player(players[i].x_pos, players[i].y_pos, players[i].team, players[i].tag_id, players[i].shirt_number));
+                let team = this.getPlayerTeam(players[i].team);
+                let playerDetails = this.getPlayerDetails(players[i].shirt_number, team);
+                this.state.players.push(new Player(players[i].x_pos, players[i].y_pos, players[i].team, players[i].tag_id, players[i].shirt_number, playerDetails, team.color_primary, team.color_secondary));
             }
         }
         this.state.allSet = true;
@@ -136,7 +163,9 @@ export default class P5Sketch extends Component {
                 this.state.players[results.index].update(newFramePlayers[p], this.state.paused);
             } else {
                 if(this.validatePlayer(newFramePlayers[p])){
-                    this.state.players.push(new Player(newFramePlayers[p].x_pos, newFramePlayers[p].y_pos, newFramePlayers[p].team, newFramePlayers[p].tag_id, newFramePlayers[p].shirt_number));
+                    let team = this.getPlayerTeam(newFramePlayers[p].team);
+                    let playerDetails = this.getPlayerDetails(newFramePlayers[p].shirt_number, team);
+                    this.state.players.push(new Player(newFramePlayers[p].x_pos, newFramePlayers[p].y_pos, newFramePlayers[p].team, newFramePlayers[p].tag_id, newFramePlayers[p].shirt_number, playerDetails, team.color_primary, team.color_secondary));
                 }
             }
         }
@@ -190,6 +219,8 @@ export default class P5Sketch extends Component {
             if(position[0] > (WIDTH-47) || position[0] < (47) || position[1] > (HEIGHT-47) || position[1] < (47)){
                 continue;
             }
+
+            if(this.state.players[i].position === "Goalkeeper" && this.show_convex_hull_exclude){continue;}
 
             if(this.state.players[i].team === HOME){
                 this.state.points_h.push(position);
@@ -278,6 +309,12 @@ export default class P5Sketch extends Component {
         this.state.ball.pressing(p5);
     };
 
+    mouseMoved = (p5) => {
+        for(let i = 0; i < this.state.players.length; i++){
+            this.state.players[i].hover(p5);
+        }
+    };
+
     setup = (p5, canvasParentRef) => {
         let self = this;
         this.canvas = p5.createCanvas(WIDTH, HEIGHT).parent(canvasParentRef);
@@ -344,6 +381,7 @@ export default class P5Sketch extends Component {
         this.show_convex_hull = sidebarStates.show_convex;
         this.show_convex_hull_h = sidebarStates.show_convexH;
         this.show_convex_hull_a = sidebarStates.show_convexA;
+        this.show_convex_hull_exclude = sidebarStates.show_convex_exclude_keeper;
         this.show_guardiola = sidebarStates.show_guardiola;
         this.show_trail = sidebarStates.show_trail;
         this.show_dist = sidebarStates.show_dist;
@@ -357,7 +395,7 @@ export default class P5Sketch extends Component {
         return (
             <div>
                 <SideBar freehand={false} callback={this.handleSidebarStates} sketchStates={this.state} />
-                <Sketch setup={this.setup} draw={this.draw} mouseClicked={this.mouseClicked} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} mouseReleased={this.mouseReleased}/>
+                <Sketch setup={this.setup} draw={this.draw} mouseMoved={this.mouseMoved} mouseClicked={this.mouseClicked} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} mouseReleased={this.mouseReleased}/>
                 <KeyboardEventHandler
                     handleKeys={['v','c','h','a','g','t', 'd', 'q','z']}
                     onKeyEvent={(key, e) => {{

@@ -20,7 +20,8 @@ export default class DataHandler extends React.Component {
             skip_frames: 1,
             meta: null,
             period_pos: "",
-            video_details: ""
+            video_details: "",
+            teams: []
         };    // This binding is necessary to make `this` work in the callback
 
         this.getPythonData = this.getPythonData.bind(this);
@@ -30,6 +31,8 @@ export default class DataHandler extends React.Component {
         this.getPythonMetaData = this.getPythonMetaData.bind(this);
         this.getProgress = this.getProgress.bind(this);
         this.getVideoDetails = this.getVideoDetails.bind(this);
+        this.getTeams = this.getTeams.bind(this);
+
 
         this.play = this.play.bind(this);
         this.pause = this.pause.bind(this);
@@ -72,6 +75,17 @@ export default class DataHandler extends React.Component {
         }).done(function() {
             self.setState({frame: frameToFind+self.state.skip_frames});
             self.play();
+        });
+    }
+
+    getTeams(){
+        $.get(window.location.href + 'teams', (resp) => {
+            if(resp !== "-1"){
+                for(let i = 0; i<resp.length;i++){
+                    this.state.teams.push(JSON.parse(resp[i]))
+                }
+                this.props.teamscallback(this.state.teams)
+            }
         });
     }
 
@@ -172,6 +186,7 @@ export default class DataHandler extends React.Component {
     componentDidMount() {
         this.getPythonMetaData()
         this.getVideoDetails()
+        this.getTeams()
     }
 
     render () {
