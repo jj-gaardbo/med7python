@@ -8,6 +8,7 @@ import json
 import time
 from tqdm import tqdm
 from xml.dom import minidom
+import xml.etree.ElementTree as ET
 from werkzeug.utils import secure_filename
 from flask import Flask, request, render_template, jsonify, flash, redirect, url_for, stream_with_context, Response
 import webbrowser
@@ -43,8 +44,7 @@ video_files = []
 data = []
 meta_data = []
 meta_data_obj = None
-event_data = []
-event_data_obj = None
+team_data_array = []
 
 half_lengths = []
 
@@ -324,6 +324,11 @@ def trail_data():
     return get_past_data(int(frame), int(size))
 
 
+@app.route("/teams")
+def teams():
+    return jsonify(team_data_array)
+
+
 @app.route("/meta")
 def meta():
     return jsonify(meta_data)
@@ -432,32 +437,19 @@ def process_data(filepath, filename):
     clean_data(data, filepath, filename, update_meta)
 
 
-class EventData:
-    def __init__(self):
-        self.goals = []
-
-    def set_goals(self, goals):
-        self.goals = goals
-
-    def set_players(self, players):
-        print("Players")
-
-
 class TeamData:
-    def __init__(self, formation, score, side):
+    def __init__(self, formation, score, side, reference):
         self.formation = formation
         self.score = score
         self.side = side
+        self.reference = reference
+        self.bookings = []
         self.goals = []
         self.match_players = []
         self.substitutions = []
-        self.team = ""
 
-    def set_team(self, side):
-        if side == "Home":
-            self.team = "H"
-        elif side == "Away":
-            self.team = "A"
+    def set_bookings(self, bookings_array):
+        self.bookings = bookings_array
 
     def set_goals(self, goals_array):
         self.goals = goals_array
@@ -467,6 +459,14 @@ class TeamData:
 
     def set_substitutions(self, substitution_array):
         self.substitutions = substitution_array
+
+    def get_match_player(self, ref):
+        if not len(self.match_players) > 0:
+            return
+
+        for i in range(len(self.match_players)):
+            if ref == self.match_players[i].player_ref:
+                return self.match_players[i]
 
 
 class Goal:
@@ -497,36 +497,125 @@ class Substitution:
         self.substitute_position = substitute_position
 
 
+class Booking:
+    def __init__(self, card, cart_type, min, sec, player_ref, reason):
+        self.card = card
+        self.cart_type = cart_type
+        self.min = min
+        self.sec = sec
+        self.player_ref = player_ref
+        self.reason = reason
+
+
+class Team:
+    def __init__(self, reference, side):
+        self.reference = reference
+        self.side = side
+        self.team_letter = ""
+        self.team_name = ""
+        self.events = 0
+        self.players = []
+        self.color_primary = ""
+        self.color_secondary = ""
+        self.name = ""
+        self.country = ""
+
+    def set_name(self, name):
+        self.name = name
+
+    def set_country(self, country):
+        self.country = country
+
+    def set_colors(self, color_1, color_2):
+        self.color_primary = color_1
+        self.color_secondary = color_2
+
+    def set_events(self, events):
+        self.events = events
+
+    def set_team(self, side):
+        if side == "Home":
+            self.team_letter = "H"
+        elif side == "Away":
+            self.team_letter = "A"
+
+    def add_player(self, player):
+        self.players.append(player)
+
+
+class Player_Detail:
+    def __init__(self, first_name, last_name, known_name, shirt_number, player_reference, position, formation_place, status):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.known_name = known_name
+        self.shirt_number = shirt_number
+        self.player_reference = player_reference
+        self.position = position
+        self.formation_place = formation_place
+        self.status = status
+
+
+
 def handle_event_data(filepath, filename):
-    global event_data, event_data_obj
-    event_data_obj = EventData()
+    global team_data_array
+
+    #player_document = ET.parse(filepath).getroot()
+
     player_document = minidom.parse(filepath)
 
-    team_data_array = []
     team_data = player_document.getElementsByTagName("TeamData")
 
-    for team in team_data:
-        side = team.attributes['Side'].value
-        temp = TeamData(team.attributes['Formation'].value, team.attributes['Score'].value, side)
-        temp.set_team(side)
+    for team_event in team_data:
+        side = team_event.attributes['Side'].value
+        reference = team_event.attributes['TeamRef'].value
+        team = Team(reference, side)
+        team.set_team(side)
 
+        temp = TeamData(team_event.attributes['Formation'].value, team_event.attributes['Score'].value, side, reference)
+
+        booking_array = []
         goals_array = []
         lineup_array = []
         substitution_array = []
-        for goal in team.getElementsByTagName("Goal"):
+        for booking in team_event.getElementsByTagName("Booking"):
+            booking_array.append(Booking(booking.attributes["Card"], booking.attributes["CardType"], booking.attributes["Min"], booking.attributes["Sec"], booking.attributes["PlayerRef"], booking.attributes["Reason"]))
+
+        temp.set_bookings(booking_array)
+        for goal in team_event.getElementsByTagName("Goal"):
             goals_array.append(Goal(goal.attributes["Min"].value, goal.attributes["Sec"].value, goal.attributes["Type"].value, goal.attributes["PlayerRef"].value))
 
         temp.set_goals(goals_array)
-        for match_player in team.getElementsByTagName("MatchPlayer"):
+        for match_player in team_event.getElementsByTagName("MatchPlayer"):
             lineup_array.append(Lineup(match_player.attributes["Formation_Place"].value, match_player.attributes["PlayerRef"].value, match_player.attributes["Position"].value, match_player.attributes["ShirtNumber"].value, match_player.attributes["Status"]))
 
         temp.set_match_players(lineup_array)
-        for substitution in team.getElementsByTagName("Substitution"):
+        for substitution in team_event.getElementsByTagName("Substitution"):
             substitution_array.append(Substitution(substitution.attributes["Min"].value, substitution.attributes["Period"].value, substitution.attributes["Reason"].value, substitution.attributes["Sec"].value, substitution.attributes["SubOff"], substitution.attributes["SubOn"], substitution.attributes["SubstitutePosition"]))
 
         temp.set_substitutions(substitution_array)
-        team_data_array.append(temp)
 
+        team.set_events(temp)
+
+        for team_elem in player_document.getElementsByTagName("Team"):
+            if not str(team_elem.attributes['uID'].value) == str(reference):
+                continue
+
+            team.set_country(team_elem.getElementsByTagName("Country"))
+
+            team.set_name(team_elem.getElementsByTagName('Name')[0].firstChild.nodeValue)
+
+            for player in team_elem.getElementsByTagName("Player"):
+                first_name = player.getElementsByTagName('First')[0].firstChild.nodeValue
+                last_name = player.getElementsByTagName('Last')[0].firstChild.nodeValue
+                known_name = ""
+                if player.getElementsByTagName('Known'):
+                    known_name = player.getElementsByTagName('Known')[0].firstChild.nodeValue
+
+                line_up_player = temp.get_match_player(player.attributes['uID'].value)
+                player_detail_obj = Player_Detail(first_name, last_name, known_name, line_up_player.shirt_number, player.attributes['uID'].value, player.attributes['Position'].value, line_up_player.formation_place, line_up_player.status)
+                team.add_player(player_detail_obj)
+
+        team_data_array.append(team)
 
 
 if __name__ == "__main__":
