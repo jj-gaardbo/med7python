@@ -397,7 +397,9 @@ export default class P5Sketch extends Component {
             <div>
                 <SideBar freehand={false} callback={this.handleSidebarStates} sketchStates={this.state} />
 
-                <Draggable handle=".handle">
+                <Draggable
+                    handle=".handle"
+                    defaultPosition={{x: 0, y: 0}}>
                     <div className={"drag-handle " + (this.props.minify ? 'minify handle ' : '') + (this.props.larger ? 'larger' : '')}>
                         <Sketch setup={this.setup} draw={this.draw} mouseMoved={this.mouseMoved} mouseClicked={this.mouseClicked} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} mouseReleased={this.mouseReleased}/>
                     </div>

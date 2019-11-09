@@ -178,7 +178,7 @@ export function displayVoronoi(p5, context, voronoi, delaunay, active){
     if(active && delaunay != null){
         p5.strokeWeight(2);
         p5.fill("#00000033");
-        p5.stroke("#00000055");
+        p5.stroke("#000000");
         context.beginPath();
         voronoi.render(context);
         voronoi.renderBounds(context);

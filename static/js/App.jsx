@@ -5,6 +5,7 @@ import P5Sketch from './sketch.js';
 import P5FreeSketch from './sketchFree.js';
 import ReactFileDrop from "./FileDrop";
 import {B4, SETAWAY, SETHOME} from "./Constants";
+import P5SketchVideo from "./sketchVideo";
 
 let $ = require('jquery');
 
@@ -191,7 +192,7 @@ export default class App extends React.Component {
 
     render() {
         return(
-            <div className={"main " + (this.state.minify ? 'minify' : '')} id="page-wrap">
+            <div className={"main " + (this.state.minify ? 'minify' : '') + (this.state.minify && this.state.paused ? ' draw' : '')} id="page-wrap">
                 {this.state.freehand ? (
                 <div className='header-contents freehand-sketch'>
                     <P5FreeSketch possession={this.state.possession}/>
@@ -211,6 +212,7 @@ export default class App extends React.Component {
 
                                     {this.state.has_video &&
                                         <div className={"video-container"}>
+                                            <P5SketchVideo paused={this.state.paused} minify={this.state.minify}/>
                                             <ReactPlayer
                                                 width={"100%"}
                                                 ref={this.ref}
@@ -261,7 +263,13 @@ export default class App extends React.Component {
                             </div>
 
                             {this.state.minify &&
-                                <button className={"btn btn-secondary larger"} onClick={this.toggleSizeLarger}>2x</button>
+                                <button className={"btn larger " + (this.state.larger ? 'btn-secondary' : 'btn-default')} onClick={this.toggleSizeLarger}>
+                                    {this.state.larger ? (
+                                        <i className="fas fa-search-minus"></i>
+                                    ) : (
+                                        <i className="fas fa-search-plus"></i>
+                                    )}
+                                    2x</button>
                             }
                             <button className={"btn btn-primary fullscreen"} onClick={this.toggleSize}>Edit board</button>
                         </div>
