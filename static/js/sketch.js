@@ -15,6 +15,7 @@ import {
     displayVoronoi, drawGrid,
     freeDraw, scaleCoords, setupGrid
 } from "./Common";
+import Draggable from 'react-draggable';
 
 let delaunay = null;
 let delaunay_h = null;
@@ -395,7 +396,12 @@ export default class P5Sketch extends Component {
         return (
             <div>
                 <SideBar freehand={false} callback={this.handleSidebarStates} sketchStates={this.state} />
-                <Sketch setup={this.setup} draw={this.draw} mouseMoved={this.mouseMoved} mouseClicked={this.mouseClicked} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} mouseReleased={this.mouseReleased}/>
+
+                <Draggable handle=".handle">
+                    <div className={"drag-handle " + (this.props.minify ? 'minify handle ' : '') + (this.props.larger ? 'larger' : '')}>
+                        <Sketch setup={this.setup} draw={this.draw} mouseMoved={this.mouseMoved} mouseClicked={this.mouseClicked} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} mouseReleased={this.mouseReleased}/>
+                    </div>
+                </Draggable>
                 <KeyboardEventHandler
                     handleKeys={['v','c','h','a','g','t', 'd', 'q','z']}
                     onKeyEvent={(key, e) => {{

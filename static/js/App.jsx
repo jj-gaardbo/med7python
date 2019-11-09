@@ -35,6 +35,7 @@ export default class App extends React.Component {
             newframe: false,
             ball_action: null,
             minify: false,
+            larger: false,
             time: 0,
             video_details: [],
             actions: {
@@ -49,6 +50,7 @@ export default class App extends React.Component {
         this.openFreeHandSketch = this.openFreeHandSketch.bind(this);
         this.checkIfServerHasData = this.checkIfServerHasData.bind(this);
         this.toggleSize = this.toggleSize.bind(this);
+        this.toggleSizeLarger = this.toggleSizeLarger.bind(this);
         this.seekVideo = this.seekVideo.bind(this);
         this.ref = this.ref.bind(this)
     }
@@ -179,6 +181,10 @@ export default class App extends React.Component {
         this.setState({minify:!this.state.minify})
     }
 
+    toggleSizeLarger() {
+        this.setState({larger:!this.state.larger})
+    }
+
     ref = player => {
         this.player = player
     };
@@ -205,23 +211,6 @@ export default class App extends React.Component {
 
                                     {this.state.has_video &&
                                         <div className={"video-container"}>
-                                            <label htmlFor="finetunerange">
-                                                Playback offset
-                                                <input id="finetunerange" type="range" min={-4} max={4} step={0.01} value={this.state.finetune} onChange={this.handleFineTune}/>
-                                                <p>{this.state.finetune} sec.</p>
-                                            </label>
-
-                                            <label htmlFor="playbackrate">
-                                                Playback rate
-                                                <input id="playbackrate" type="range" min={0} max={2} step={0.01} value={this.state.playbackRate} onChange={this.handlePlaybackRate}/>
-                                                <p>{this.state.playbackRate} speed</p>
-                                            </label>
-
-                                            <label htmlFor="resyncrate">
-                                                Resync rate
-                                                <input id="resyncrate" type="range" min={0} max={10000} step={1000} value={this.state.timeout} onChange={this.handleResyncRate}/>
-                                                <p>{this.state.timeout/1000} sec.</p>
-                                            </label>
                                             <ReactPlayer
                                                 width={"100%"}
                                                 ref={this.ref}
@@ -230,10 +219,30 @@ export default class App extends React.Component {
                                                 playing={!this.state.paused}
                                                 playbackRate={parseFloat(this.state.playbackRate)}
                                             />
+                                            <div className={"video-controls"}>
+                                                <label htmlFor="finetunerange">
+                                                    Playback offset <br/>
+                                                    <input id="finetunerange" type="range" min={-4} max={4} step={0.01} value={this.state.finetune} onChange={this.handleFineTune}/>
+                                                    <p>{this.state.finetune} sec.</p>
+                                                </label>
+
+                                                <label htmlFor="playbackrate">
+                                                    Playback rate <br/>
+                                                    <input id="playbackrate" type="range" min={0} max={2} step={0.01} value={this.state.playbackRate} onChange={this.handlePlaybackRate}/>
+                                                    <p>{this.state.playbackRate} speed</p>
+                                                </label>
+
+                                                <label htmlFor="resyncrate">
+                                                    Resync rate <br/>
+                                                    <input id="resyncrate" type="range" min={0} max={10000} step={1000} value={this.state.timeout} onChange={this.handleResyncRate}/>
+                                                    <p>{this.state.timeout/1000} sec.</p>
+                                                </label>
+                                            </div>
                                         </div>
                                     }
-                                    
-                                    <P5Sketch team_data={this.state.team_data} meta_data={this.state.meta_data} frame_index={this.state.frame_index} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
+
+                                    <P5Sketch larger={this.state.larger} minify={this.state.minify} team_data={this.state.team_data} meta_data={this.state.meta_data} frame_index={this.state.frame_index} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
+
                                 </div>
                             }
                             <div className="match-details hidden">
@@ -251,7 +260,10 @@ export default class App extends React.Component {
                                 <p>SetHome: {this.state.actions.set_home}</p>
                             </div>
 
-                            <button className={"fullscreen"} onClick={this.toggleSize}>Full screen</button>
+                            {this.state.minify &&
+                                <button className={"btn btn-secondary larger"} onClick={this.toggleSizeLarger}>2x</button>
+                            }
+                            <button className={"btn btn-primary fullscreen"} onClick={this.toggleSize}>Edit board</button>
                         </div>
                     )}
                     </div>
