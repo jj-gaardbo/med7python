@@ -22,6 +22,7 @@ export default class App extends React.Component {
             timeout:5000,
             finetune:0,
             current_frame: null,
+            possession_player:null,
             frame_index: 0,
             status: "",
             possession: "",
@@ -54,6 +55,7 @@ export default class App extends React.Component {
         this.toggleSizeLarger = this.toggleSizeLarger.bind(this);
         this.seekVideo = this.seekVideo.bind(this);
         this.ref = this.ref.bind(this)
+        this.possession = this.possession.bind(this)
     }
 
     handleVideos = (details) => {
@@ -190,6 +192,10 @@ export default class App extends React.Component {
         this.player = player
     };
 
+    possession = poss_player => {
+        this.state.possession_player = poss_player
+    };
+
     render() {
         return(
             <div className={"main " + (this.state.minify ? 'minify' : '') + (this.state.minify && this.state.paused ? ' draw' : '')} id="page-wrap">
@@ -243,7 +249,7 @@ export default class App extends React.Component {
                                         </div>
                                     }
 
-                                    <P5Sketch larger={this.state.larger} minify={this.state.minify} team_data={this.state.team_data} meta_data={this.state.meta_data} frame_index={this.state.frame_index} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
+                                    <P5Sketch possessioncb={this.possession} larger={this.state.larger} minify={this.state.minify} team_data={this.state.team_data} meta_data={this.state.meta_data} frame_index={this.state.frame_index} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
 
                                 </div>
                             }
@@ -271,7 +277,13 @@ export default class App extends React.Component {
                                     )}
                                     2x</button>
                             }
-                            <button className={"btn btn-primary fullscreen"} onClick={this.toggleSize}>Edit board</button>
+                            <button className={"btn btn-primary fullscreen"} onClick={this.toggleSize}>{!this.state.minify ? ("Minimize") : ("Edit Board")}</button>
+
+                            {this.state.possession_player !== null &&
+                                <div className="possession-div">
+                                    {this.state.possession_player.firstname + " " + this.state.possession_player.lastname + " : " + this.state.possession_player.team_name}
+                                </div>
+                            }
                         </div>
                     )}
                     </div>

@@ -490,12 +490,15 @@ class Goal:
 
 
 class Lineup:
-    def __init__(self, formation_place, player_ref, position, shirt_number, status):
+    def __init__(self, formation_place, player_ref, position, shirt_number, status, sub_position):
         self.formation_place = formation_place
         self.player_ref = player_ref
         self.position = position
         self.shirt_number = shirt_number
         self.status = status
+        self.sub_position = ""
+        if not sub_position == None:
+            self.sub_position = sub_position
 
 
 class Substitution:
@@ -558,13 +561,14 @@ class Team:
 
 
 class Player_Detail:
-    def __init__(self, first_name, last_name, known_name, shirt_number, player_reference, position, formation_place, status):
+    def __init__(self, first_name, last_name, known_name, shirt_number, player_reference, position, sub_position, formation_place, status):
         self.first_name = first_name
         self.last_name = last_name
         self.known_name = known_name
         self.shirt_number = shirt_number
         self.player_reference = player_reference
         self.position = position
+        self.sub_position = sub_position
         self.formation_place = formation_place
         self.status = status
 
@@ -597,7 +601,7 @@ def handle_event_data(filepath, filename):
 
         temp.set_goals(goals_array)
         for match_player in team_event.iter("MatchPlayer"):
-            lineup_array.append(Lineup(match_player.get("Formation_Place"), match_player.get("PlayerRef"), match_player.get("Position"), match_player.get("ShirtNumber"), match_player.get("Status")))
+            lineup_array.append(Lineup(match_player.get("Formation_Place"), match_player.get("PlayerRef"), match_player.get("Position"), match_player.get("ShirtNumber"), match_player.get("Status"), match_player.get("SubPosition")))
 
         temp.set_match_players(lineup_array)
         for substitution in team_event.iter("Substitution"):
@@ -631,7 +635,7 @@ def handle_event_data(filepath, filename):
                         known_name = names.text
 
                 line_up_player = temp.get_match_player(player.get('uID'))
-                player_detail_obj = Player_Detail(first_name, last_name, known_name, line_up_player.shirt_number, player.get('uID'), player.get('Position'), line_up_player.formation_place, line_up_player.status)
+                player_detail_obj = Player_Detail(first_name, last_name, known_name, line_up_player.shirt_number, player.get('uID'), player.get('Position'), line_up_player.sub_position, line_up_player.formation_place, line_up_player.status)
                 team.add_player(player_detail_obj)
 
         team_data_array.append(team.toJSON())

@@ -255,6 +255,27 @@ export function displayBall(p5, ball, trails, paused, edited){
     }
 }
 
+
+export function checkPossession(ball, players, callback){
+    if(ball !== null && players.length > 0){
+        if(ball.z > 900){
+            return;
+        }
+        let someone_has_ball = false;
+        for(let i = 0; i < players.length; i++){
+            players[i].check_possession(ball.x, ball.y, ball.z);
+            if(players[i].has_ball){
+                someone_has_ball = true;
+                callback(players[i])
+            }
+        }
+        if(!someone_has_ball){
+            callback(null)
+        }
+    }
+}
+
+
 export function displayConvexHull(p5, context, voronoi, delaunay, active, fill){
     if(active && delaunay != null){
         context.fillStyle = fill;

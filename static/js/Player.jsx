@@ -9,18 +9,20 @@ function allEqual(arr) {
 }
 
 export default class Player {
-    constructor(x, y, team, id, shirt, teamDetails, color1, color2){
+    constructor(x, y, team, id, shirt, teamDetails, color1, color2, teamName){
         let coords = scaleCoords(x, y);
         this.x = coords[0];
         this.y = coords[1];
         this.r = 20;
         this.team = team;
+        this.team_name = "";
         this.shirtNum = shirt;
         this.id = id;
         this.is_clicked = false;
         this.is_dragged = false;
         this.is_pressed = false;
         this.is_hovered = false;
+        this.has_ball = false;
         this.edited = false;
         this.trail = [];
         this.recentMovement = [];
@@ -30,6 +32,7 @@ export default class Player {
         this.knownname = "";
         this.ref = "";
         this.position = "";
+        this.sub_pos = "ss";
         this.status = "";
         this.color1 = "";
         this.color2 = "";
@@ -39,16 +42,32 @@ export default class Player {
             this.knownname = teamDetails.known_name;
             this.ref = teamDetails.player_reference;
             this.position = teamDetails.position;
+            this.sub_pos = teamDetails.sub_position;
             this.status = teamDetails.status;
         }
 
         if(color1 !== ""){this.color1 = color1}
         if(color2 !== null){this.color2 = color2}
+
+        if(teamName !== ""){this.team_name = teamName}
     }
 
     checkMovement = function(){
         if(this.recentMovement.length >= 20 && allEqual(this.recentMovement)){
             this.exclude = true;
+        }
+    }
+
+    check_possession = function(ballX, ballY, ballZ){
+        let buffer = 2;
+        if(ballZ > 900){
+            this.has_ball = false;
+            return;
+        }
+        if(ballX > this.x-this.r+buffer && ballX < this.x + this.r+buffer && ballY > this.y-this.r+buffer && ballY < this.y + this.r+buffer){
+            this.has_ball = true;
+        } else {
+            this.has_ball = false;
         }
     }
 
@@ -95,14 +114,14 @@ export default class Player {
         p5.stroke(0);
         p5.fill(0);
         p5.text(this.shirtNum, this.x-6, this.y+5);
-        /*p5.fill(p5.color(255,255,0));
-        p5.text(this.id, this.x-5, this.y+25);
-        p5.text(this.team, this.x-5, this.y+45);*/
 
         if(this.is_hovered){
             p5.textAlign(p5.CENTER);
             p5.text(this.firstname + " " + this.lastname, this.x-6, this.y+25);
             p5.text(this.position, this.x-6, this.y+45);
+            if(this.sub_pos !== ""){
+                p5.text(this.sub_pos, this.x-6, this.y+65);
+            }
         }
     };
 

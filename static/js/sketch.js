@@ -7,6 +7,7 @@ import Ball from "./Ball"
 import {HOME, AWAY, HEIGHT, WIDTH} from "./Constants"
 import KeyboardEventHandler from 'react-keyboard-event-handler';
 import {
+    checkPossession,
     displayBall,
     displayConvexHull, displayDangerZones,
     displayDist,
@@ -113,7 +114,7 @@ export default class P5Sketch extends Component {
             if(this.validatePlayer(players[i])){
                 let team = this.getPlayerTeam(players[i].team);
                 let playerDetails = this.getPlayerDetails(players[i].shirt_number, team);
-                this.state.players.push(new Player(players[i].x_pos, players[i].y_pos, players[i].team, players[i].tag_id, players[i].shirt_number, playerDetails, team.color_primary, team.color_secondary));
+                this.state.players.push(new Player(players[i].x_pos, players[i].y_pos, players[i].team, players[i].tag_id, players[i].shirt_number, playerDetails, team.color_primary, team.color_secondary, team.name));
             }
         }
         this.state.allSet = true;
@@ -166,7 +167,7 @@ export default class P5Sketch extends Component {
                 if(this.validatePlayer(newFramePlayers[p])){
                     let team = this.getPlayerTeam(newFramePlayers[p].team);
                     let playerDetails = this.getPlayerDetails(newFramePlayers[p].shirt_number, team);
-                    this.state.players.push(new Player(newFramePlayers[p].x_pos, newFramePlayers[p].y_pos, newFramePlayers[p].team, newFramePlayers[p].tag_id, newFramePlayers[p].shirt_number, playerDetails, team.color_primary, team.color_secondary));
+                    this.state.players.push(new Player(newFramePlayers[p].x_pos, newFramePlayers[p].y_pos, newFramePlayers[p].team, newFramePlayers[p].tag_id, newFramePlayers[p].shirt_number, playerDetails, team.color_primary, team.color_secondary, team.name));
                 }
             }
         }
@@ -371,6 +372,8 @@ export default class P5Sketch extends Component {
         displayPlayers(p5, this.state.players, this.show_trail, this.state.paused, this.state.edited);
 
         displayBall(p5, this.state.ball, this.show_trail, this.state.paused, this.state.edited);
+
+        checkPossession(this.state.ball, this.state.players, this.props.possessioncb);
 
         //drawGrid(p5, this.state.zones);
     };
