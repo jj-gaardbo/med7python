@@ -16,7 +16,7 @@ export default class DataHandler extends React.Component {
             x: 0,
             percentage: 0,
             intervalID: 0,
-            timeout: 50,
+            timeout: 5,
             skip_frames: 1,
             meta: null,
             period_pos: "",
@@ -151,6 +151,7 @@ export default class DataHandler extends React.Component {
     }
 
     play(){
+        if(!this.state.paused){return;}
         this.setState({paused:false});
         this.setState({intervalID: setInterval(this.getPythonData, this.state.timeout)})
         this.props.pauseCallback(false);

@@ -279,6 +279,10 @@ video{
     opacity: 1;
 }
 
+.reset.react-draggable-dragged{
+    transform: none!important;
+}
+
 .minify canvas{
     transform: scale(0.4);
     top: calc(100vh - 670px);

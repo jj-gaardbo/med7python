@@ -86,7 +86,7 @@ class ReactFileDrop extends React.Component {
 
                     <p>
                         1. Drop .mp4 video file for each half<br/>
-                        2. Drop .xml meta file<br/>
+                        2. Drop .xml meta file and f7 file<br/>
                         3. Drop .dat data file
                     </p>
                     <progress className={"upload-progress hidden"}></progress>
