@@ -572,6 +572,8 @@ class Player_Detail:
 def handle_event_data(filepath, filename):
     global team_data_array
 
+    string = open(filepath).readlines()
+
     player_document = ET.parse(filepath).getroot()
 
     for team_event in player_document.iter('TeamData'):
@@ -610,8 +612,7 @@ def handle_event_data(filepath, filename):
                 continue
 
             kit = team_elem.find('Kit')
-            if kit:
-                team.set_colors(kit.get("colour1"), kit.get("colour2"))
+            team.set_colors(kit.get("colour1"), kit.get("colour2"))
 
             team.set_country(team_elem.find("Country").text)
 

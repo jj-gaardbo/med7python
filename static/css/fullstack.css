@@ -293,6 +293,10 @@ video{
     transform: scale(0.7);
 }
 
+.minify.react-draggable:hover{
+    cursor: move;
+}
+
 .minify canvas:hover{
     opacity: 0.9;
 }
