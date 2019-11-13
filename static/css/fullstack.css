@@ -283,6 +283,20 @@ video{
     transform: none!important;
 }
 
+.possession-div:before{
+    content: "";
+    display: block;
+    background-image: url("../images/ball.png");
+    background-color: #ffffff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin-right: 10px;
+    float: left;
+}
+
 .possession-div{
     color: #ffffff;
     font-weight: 600;
