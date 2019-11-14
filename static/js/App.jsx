@@ -17,7 +17,7 @@ export default class App extends React.Component {
         super(props)
         this.state = {
             playing: false,
-            playbackRate: 0.75,
+            playbackRate: 1,
             currentVideo: "",
             timeout:5000,
             finetune:0,

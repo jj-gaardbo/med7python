@@ -16,7 +16,7 @@ export default class DataHandler extends React.Component {
             x: 0,
             percentage: 0,
             intervalID: 0,
-            timeout: 30,
+            timeout: 40,
             skip_frames: 1,
             meta: null,
             period_pos: "",
