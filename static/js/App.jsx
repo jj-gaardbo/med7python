@@ -40,6 +40,7 @@ export default class App extends React.Component {
             larger: false,
             time: 0,
             video_details: [],
+            dragging: false,
             actions: {
                 b4: 0,
                 set_away: 0,
@@ -196,6 +197,10 @@ export default class App extends React.Component {
         this.state.possession_player = poss_player
     };
 
+    handleDrag = (bool) => {
+        this.setState({dragging:bool})
+    };
+
     render() {
         return(
             <div className={"main " + (this.state.minify ? 'minify' : '') + (this.state.minify && this.state.paused ? ' draw' : '')} id="page-wrap">
@@ -218,7 +223,7 @@ export default class App extends React.Component {
 
                                     {this.state.has_video &&
                                         <div className={"video-container"}>
-                                            <P5SketchVideo paused={this.state.paused} minify={this.state.minify}/>
+                                            <P5SketchVideo dragging={this.state.dragging} paused={this.state.paused} minify={this.state.minify}/>
                                             <ReactPlayer
                                                 width={"100%"}
                                                 ref={this.ref}
@@ -249,7 +254,7 @@ export default class App extends React.Component {
                                         </div>
                                     }
 
-                                    <P5Sketch possessioncb={this.possession} larger={this.state.larger} minify={this.state.minify} team_data={this.state.team_data} meta_data={this.state.meta_data} frame_index={this.state.frame_index} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
+                                    <P5Sketch dragCallback={this.handleDrag} possessioncb={this.possession} larger={this.state.larger} minify={this.state.minify} team_data={this.state.team_data} meta_data={this.state.meta_data} frame_index={this.state.frame_index} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
 
                                 </div>
                             }

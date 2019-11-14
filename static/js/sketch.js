@@ -60,6 +60,7 @@ export default class P5Sketch extends Component {
             allSet: false,
             paused:null,
             edited: false,
+            dragging:false,
             ball:null,
             data: [],
             meta_data: null,
@@ -222,6 +223,8 @@ export default class P5Sketch extends Component {
                 continue;
             }
 
+            this.state.points.push(position);
+
             if(this.state.players[i].position === "Goalkeeper" && this.show_convex_hull_exclude){continue;}
 
             if(this.state.players[i].team === HOME){
@@ -229,7 +232,6 @@ export default class P5Sketch extends Component {
             } else if(this.state.players[i].team === AWAY) {
                 this.state.points_a.push(position);
             }
-            this.state.points.push(position);
         }
 
         delaunay = Delaunay.from(this.state.points);
@@ -260,6 +262,10 @@ export default class P5Sketch extends Component {
         for(let i = 0; i < this.state.players.length; i++){
             this.state.players[i].clicked(p5);
             if(this.show_dist && this.state.players[i].is_clicked){
+                let results = this.search(this.state.players[i].shirtNum, this.state.players[i].id, this.state.players[i].team, this.state.dist_players);
+                if(results !== null){
+
+                }
                 this.state.dist_players.push(this.state.players[i]);
             }
         }
@@ -369,7 +375,7 @@ export default class P5Sketch extends Component {
             }
         }
 
-        displayPlayers(p5, this.state.players, this.show_trail, this.state.paused, this.state.edited);
+        displayPlayers(p5, this.state.players, this.show_trail, this.state.paused, this.state.edited, this.show_dist);
 
         displayBall(p5, this.state.ball, this.show_trail, this.state.paused, this.state.edited);
 
@@ -395,14 +401,21 @@ export default class P5Sketch extends Component {
         }
     };
 
+    handleDragging(bool){
+        this.state.dragging = bool
+        this.props.dragCallback(bool)
+        return true;
+    }
+
     render() {
         return (
             <div>
                 <SideBar freehand={false} callback={this.handleSidebarStates} sketchStates={this.state} />
 
                 <Draggable
-                    handle=".handle"
-                    defaultPosition={{x: 0, y: 0}}>
+                    onMouseDown={(e) => this.handleDragging(true)}
+                    onStop={() => this.handleDragging(false)}
+                    handle=".handle">
                     <div className={"drag-handle " + (this.props.minify ? 'minify handle ' : 'reset ') + (this.props.larger ? 'larger' : '')}>
                         <Sketch setup={this.setup} draw={this.draw} mouseMoved={this.mouseMoved} mouseClicked={this.mouseClicked} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} mouseReleased={this.mouseReleased}/>
                     </div>

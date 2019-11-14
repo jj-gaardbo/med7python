@@ -36,7 +36,7 @@ export default class P5SketchVideo extends Component {
     };
 
     draw = p5 => {
-        if(this.props.paused && this.props.minify){
+        if(this.props.paused && this.props.minify && !this.props.dragging){
             freeDraw(p5, true, this.state.mouseIsPressed);
         } else {
             p5.clear()

@@ -22,6 +22,7 @@ export default class Player {
         this.is_dragged = false;
         this.is_pressed = false;
         this.is_hovered = false;
+        this.is_highlighted = false;
         this.has_ball = false;
         this.edited = false;
         this.trail = [];
@@ -71,7 +72,7 @@ export default class Player {
         }
     }
 
-    display = function(p5, trails=null, paused=false){
+    display = function(p5, trails=null, paused=false, dist){
         if(this.exclude){ return; }
 
         if(!paused){
@@ -87,8 +88,8 @@ export default class Player {
 
         p5.strokeWeight(1);
         if(this.position === "Goalkeeper") {
-            p5.stroke("#000000");
-            p5.fill("#ffff00")
+            p5.stroke("#ffffff");
+            p5.fill("#000000")
         }
         else if(this.color1 !== ""){
             p5.noStroke();
@@ -115,7 +116,7 @@ export default class Player {
         p5.fill(0);
         p5.text(this.shirtNum, this.x-6, this.y+5);
 
-        if(this.is_hovered){
+        if(this.is_highlighted && !dist){
             p5.textAlign(p5.CENTER);
             p5.text(this.firstname + " " + this.lastname, this.x-6, this.y+25);
             p5.text(this.position, this.x-6, this.y+45);
@@ -143,6 +144,7 @@ export default class Player {
 
     clicked = function(p5){
         if(p5.mouseX > this.x-this.r+5 && p5.mouseX < this.x + this.r+5 && p5.mouseY > this.y-this.r+5 && p5.mouseY < this.y + this.r+5){
+            this.is_highlighted = !this.is_highlighted;
             this.is_clicked = true;
             this.edited = true;
             return this.id;

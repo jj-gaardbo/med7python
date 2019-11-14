@@ -34,8 +34,6 @@ let dangerValues = [
 let zones = [];
 
 function getValue(i, j){
-
-
     if(i < dangerValues.length && dangerValues[i] && dangerValues[i][j]){
         return dangerValues[i][j];
     } else if(i > 35){
@@ -49,9 +47,7 @@ export function setupGrid(p5){
     p5.translate(GRIDPADDING_W, GRIDPADDING_H);
     for (let i = 0; i < GRIDCOLS; i++) {
         zones[i] = [];
-        // Begin loop for rows
         for (let j = 0; j < GRIDROWS; j++) {
-
             let x = i*GRIDSIZE_W;
             let y = j*GRIDSIZE_H;
             if(x+GRIDSIZE_W > WIDTH-(GRIDPADDING_W+GRIDPADDING_W) || y+GRIDSIZE_H > HEIGHT-(GRIDPADDING_H+GRIDPADDING_H)){
@@ -82,7 +78,7 @@ export function scaleCoords(x, y) {
 export function displayGuardiolaZones(p5, active){
     if(!active){ return; }
     p5.strokeWeight(3);
-    p5.stroke("#00009933");
+    p5.stroke("rgba(171,255,243,0.49)");
     let padding = 45;
     p5.line(padding, 354, WIDTH-padding, 354);
     p5.line(padding, 574, WIDTH-padding, 574);
@@ -122,7 +118,7 @@ export function freeDraw(p5, active, mouseIsPressed){
     if(!active){return;}
     if(mouseIsPressed){
         p5.strokeWeight(3);
-        p5.stroke('#ffff00');
+        p5.stroke('#c0dfff');
         p5.noFill()
         p5.smooth();
         p5.line(p5.mouseX, p5.mouseY, p5.pmouseX, p5.pmouseY);
@@ -213,10 +209,10 @@ export function displayVoronoi(p5, context, voronoi, delaunay, active){
     }
 }
 
-export function displayPlayers(p5, players, trails, paused, edited){
+export function displayPlayers(p5, players, trails, paused, edited, dist){
     if(players.length > 0 || typeof players[0] !== 'undefined'){
         for(let i = 0; i < players.length; i++){
-            players[i].display(p5, trails, paused, edited);
+            players[i].display(p5, trails, paused, edited, dist);
         }
     }
 }
