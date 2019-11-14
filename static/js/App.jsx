@@ -224,14 +224,16 @@ export default class App extends React.Component {
                                     {this.state.has_video &&
                                         <div className={"video-container"}>
                                             <P5SketchVideo dragging={this.state.dragging} paused={this.state.paused} minify={this.state.minify}/>
-                                            <ReactPlayer
-                                                width={"100%"}
-                                                ref={this.ref}
-                                                url={'./dist/static/'+this.state.currentVideo}
-                                                onSeek={e => console.log('onSeek', e)}
-                                                playing={!this.state.paused}
-                                                playbackRate={parseFloat(this.state.playbackRate)}
-                                            />
+                                            {this.state.currentVideo !== "" &&
+                                                <ReactPlayer
+                                                    width={"100%"}
+                                                    ref={this.ref}
+                                                    url={'./dist/static/'+this.state.currentVideo}
+                                                    onSeek={e => console.log('onSeek', e)}
+                                                    playing={!this.state.paused}
+                                                    playbackRate={parseFloat(this.state.playbackRate)}
+                                                />
+                                            }
                                             <div className={"video-controls"}>
                                                 <label htmlFor="finetunerange">
                                                     Playback offset <br/>
