@@ -271,9 +271,15 @@ export function checkPossession(ball, players, callback){
     }
 }
 
+function getPois(indexList, pointArray){
+    let value = [0, 0, 0, 0];
+
+    return value
+}
 
 export function displayConvexHull(p5, context, voronoi, delaunay, active, fill){
     if(active && delaunay != null){
+        let poi = getPois(delaunay.hull, delaunay.points);
         context.fillStyle = fill;
         context.beginPath();
         voronoi.delaunay.renderHull(context);

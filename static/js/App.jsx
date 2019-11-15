@@ -284,7 +284,7 @@ export default class App extends React.Component {
                                     )}
                                     2x</button>
                             }
-                            <button className={"btn btn-primary fullscreen"} onClick={this.toggleSize}>{!this.state.minify ? ("Minimize") : ("Edit Board")}</button>
+                            <button className={"btn btn-primary fullscreen"} onClick={this.toggleSize}>{!this.state.minify ? ("Show video") : ("Edit Board")}</button>
 
                             {this.state.possession_player !== null &&
                                 <div className="possession-div">

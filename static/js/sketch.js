@@ -32,16 +32,6 @@ export default class P5Sketch extends Component {
     canvas;
     playerObjects = [];
     ball;
-    show_voronoi = false;
-    show_voronoi_danger = false;
-    show_convex_hull = false;
-    show_convex_hull_h = false;
-    show_convex_hull_a = false;
-    show_convex_hull_exclude = false;
-    show_guardiola = false;
-    show_dist = false;
-    free_draw = false;
-    show_trail = false;
     first_period_start = 0;
     first_period_end = 0;
     second_period_start = 0;
@@ -50,8 +40,6 @@ export default class P5Sketch extends Component {
     third_period_end = 0;
     fourth_period_start = 0;
     fourth_period_end = 0;
-    trails = []
-
 
     constructor(props){
         super(props);
@@ -72,7 +60,17 @@ export default class P5Sketch extends Component {
             dist_players: [],
             mouseIsPressed: false,
             zones: [],
-            team_data: []
+            team_data: [],
+            show_voronoi: false,
+            show_voronoi_danger: false,
+            show_convex_hull: false,
+            show_convex_hull_h: false,
+            show_convex_hull_a: false,
+            show_convex_hull_exclude: false,
+            show_guardiola: false,
+            show_trail: false,
+            show_dist: false,
+            free_draw: false
         }
     }
 
@@ -86,7 +84,7 @@ export default class P5Sketch extends Component {
         }
         this.updatePoints();
         if(!this.state.paused){
-            this.free_draw = false;
+            this.state.free_draw = false;
         }
     }
 
@@ -225,7 +223,7 @@ export default class P5Sketch extends Component {
 
             this.state.points.push(position);
 
-            if(this.state.players[i].position === "Goalkeeper" && this.show_convex_hull_exclude){continue;}
+            if(this.state.players[i].position === "Goalkeeper" && this.state.show_convex_hull_exclude){continue;}
 
             if(this.state.players[i].team === HOME){
                 this.state.points_h.push(position);
@@ -257,11 +255,11 @@ export default class P5Sketch extends Component {
 
     mouseClicked = (p5) => {
         if(!this.state.paused){return;}
-        if(this.free_draw){return;}
+        if(this.state.free_draw){return;}
 
         for(let i = 0; i < this.state.players.length; i++){
             this.state.players[i].clicked(p5);
-            if(this.show_dist && this.state.players[i].is_clicked){
+            if(this.state.show_dist && this.state.players[i].is_clicked){
                 let results = this.search(this.state.players[i].shirtNum, this.state.players[i].id, this.state.players[i].team, this.state.dist_players);
                 if(results !== null){
 
@@ -274,7 +272,7 @@ export default class P5Sketch extends Component {
 
     mouseDragged = (p5) => {
         if(!this.state.paused){return;}
-        if(this.free_draw){return;}
+        if(this.state.free_draw){return;}
 
         for(let i = 0; i < this.state.players.length; i++){
             if(!this.state.players[i].is_pressed){continue;}
@@ -343,41 +341,35 @@ export default class P5Sketch extends Component {
     };
 
     draw = p5 => {
-        if(this.bg && !this.free_draw){
+        if(this.bg && !this.state.free_draw){
             //p5.background(this.bg);
         }
 
-        if(!this.free_draw){
+        if(!this.state.free_draw){
             p5.clear();
         }
 
         this.updatePoints(p5);
 
-        displayVoronoi(p5, context, voronoi, delaunay, this.show_voronoi);
+        displayVoronoi(p5, context, voronoi, delaunay, this.state.show_voronoi);
 
-        displayDangerZones(p5, voronoi, this.show_voronoi_danger);
+        displayDangerZones(p5, voronoi, this.state.show_voronoi_danger);
 
-        displayConvexHull(p5, context, voronoi, delaunay, this.show_convex_hull, "#00ff0044");
+        displayConvexHull(p5, context, voronoi, delaunay, this.state.show_convex_hull, "#00ff0044");
 
-        displayConvexHull(p5, context, voronoi_h, delaunay, this.show_convex_hull_h, "#ffffff44");
+        displayConvexHull(p5, context, voronoi_h, delaunay, this.state.show_convex_hull_h, "#ffffff44");
 
-        displayConvexHull(p5, context, voronoi_a, delaunay, this.show_convex_hull_a, "#ff000044");
+        displayConvexHull(p5, context, voronoi_a, delaunay, this.state.show_convex_hull_a, "#ff000044");
 
-        displayGuardiolaZones(p5, this.show_guardiola);
+        displayGuardiolaZones(p5, this.state.show_guardiola);
 
-        displayDist(p5, this.state.dist_players, this.show_dist);
+        displayDist(p5, this.state.dist_players, this.state.show_dist);
 
-        freeDraw(p5, this.free_draw, this.state.mouseIsPressed);
+        freeDraw(p5, this.state.free_draw, this.state.mouseIsPressed);
 
-        if(this.show_trail){
-            for(let i = 0; i<this.trails.length;i++){
-                p5.ellipse(this.trails[i][0], this.trails[i][1],5, 5);
-            }
-        }
+        displayPlayers(p5, this.state.players, this.state.show_trail, this.state.paused, this.state.edited, this.state.show_dist);
 
-        displayPlayers(p5, this.state.players, this.show_trail, this.state.paused, this.state.edited, this.show_dist);
-
-        displayBall(p5, this.state.ball, this.show_trail, this.state.paused, this.state.edited);
+        displayBall(p5, this.state.ball, this.state.show_trail, this.state.paused, this.state.edited);
 
         checkPossession(this.state.ball, this.state.players, this.props.possessioncb);
 
@@ -385,18 +377,17 @@ export default class P5Sketch extends Component {
     };
 
     handleSidebarStates = (sidebarStates) => {
-        this.state.menuOpen = sidebarStates.menuOpen;
-        this.show_voronoi = sidebarStates.show_voronoi;
-        this.show_voronoi_danger = sidebarStates.show_voronoi_danger;
-        this.show_convex_hull = sidebarStates.show_convex;
-        this.show_convex_hull_h = sidebarStates.show_convexH;
-        this.show_convex_hull_a = sidebarStates.show_convexA;
-        this.show_convex_hull_exclude = sidebarStates.show_convex_exclude_keeper;
-        this.show_guardiola = sidebarStates.show_guardiola;
-        this.show_trail = sidebarStates.show_trail;
-        this.show_dist = sidebarStates.show_dist;
-        this.free_draw = sidebarStates.free_draw;
-        if(!this.show_dist){
+        this.setState({show_voronoi: sidebarStates.show_voronoi});
+        this.setState({show_voronoi_danger: sidebarStates.show_voronoi_danger});
+        this.setState({show_convex_hull: sidebarStates.show_convex});
+        this.setState({show_convex_hull_h: sidebarStates.show_convexH});
+        this.setState({show_convex_hull_a: sidebarStates.show_convexA});
+        this.setState({show_convex_hull_exclude: sidebarStates.show_convex_exclude_keeper});
+        this.setState({show_guardiola: sidebarStates.show_guardiola});
+        this.setState({show_trail: sidebarStates.show_trail});
+        this.setState({show_dist: sidebarStates.show_dist});
+        this.setState({free_draw: sidebarStates.free_draw});
+        if(!this.state.show_dist){
             this.state.dist_players = [];
         }
     };
@@ -420,40 +411,6 @@ export default class P5Sketch extends Component {
                         <Sketch setup={this.setup} draw={this.draw} mouseMoved={this.mouseMoved} mouseClicked={this.mouseClicked} mousePressed={this.mousePressed} mouseDragged={this.mouseDragged} mouseReleased={this.mouseReleased}/>
                     </div>
                 </Draggable>
-                <KeyboardEventHandler
-                    handleKeys={['v','c','h','a','g','t', 'd', 'q','z']}
-                    onKeyEvent={(key, e) => {{
-                        switch(key){
-                            case 'v':
-                                this.show_voronoi = !this.show_voronoi
-                                return;
-                            case 'z':
-                                this.show_voronoi_danger = !this.show_voronoi_danger
-                                return;
-                            case 'c':
-                                this.show_convex_hull = !this.show_convex_hull
-                                return;
-                            case 'h':
-                                this.show_convex_hull_h = !this.show_convex_hull_h
-                                return;
-                            case 'a':
-                                this.show_convex_hull_a = !this.show_convex_hull_a
-                                return;
-                            case 'g':
-                                this.show_guardiola = !this.show_guardiola
-                                return;
-                            case 't':
-                                this.show_trail = !this.show_trail
-                                return;
-                            case 'd':
-                                this.show_dist = !this.show_dist
-                                return;
-                            case 'q':
-                                this.free_draw = !this.free_draw
-                                return;
-                        }
-                    }}
-                    } />
             </div>
         );
     }

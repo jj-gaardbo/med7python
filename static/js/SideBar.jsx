@@ -1,5 +1,6 @@
 import React from "react";
 import { slide as Menu } from 'react-burger-menu'
+import KeyboardEventHandler from "react-keyboard-event-handler";
 
 let $ = require('jquery');
 
@@ -38,6 +39,7 @@ export default class SideBar extends React.Component {
         this.toggleTrail = this.toggleTrail.bind(this);
         this.toggleDist = this.toggleDist.bind(this);
         this.toggleDraw = this.toggleDraw.bind(this);
+        this.togglePlacePlayers = this.togglePlacePlayers.bind(this);
         this.terminate = this.terminate.bind(this);
     }
 
@@ -85,53 +87,47 @@ export default class SideBar extends React.Component {
     }
 
     toggleVoronoi(){
-        this.state.show_voronoi = !this.state.show_voronoi;
-        this.props.callback(this.state);
+        this.setState({show_voronoi: !this.state.show_voronoi}, () => this.props.callback(this.state))
     }
 
     toggleVoronoiDanger(){
-        this.state.show_voronoi_danger = !this.state.show_voronoi_danger;
-        this.props.callback(this.state);
+        this.setState({show_voronoi_danger: !this.state.show_voronoi_danger}, () => this.props.callback(this.state))
     }
 
     toggleConvex(){
-        this.setState({show_convex: !this.state.show_convex})
-        this.props.callback(this.state);
+        this.setState({show_convex: !this.state.show_convex}, () => this.props.callback(this.state))
     }
 
     toggleExcludeKeeper(){
-        this.state.show_convex_exclude_keeper = !this.state.show_convex_exclude_keeper;
-        this.props.callback(this.state);
+        this.setState({show_convex_exclude_keeper: !this.state.show_convex_exclude_keeper}, () => this.props.callback(this.state));
     }
 
     toggleConvexH(){
-        this.state.show_convexH = !this.state.show_convexH;
-        this.props.callback(this.state);
+        this.setState({show_convexH: !this.state.show_convexH}, () => this.props.callback(this.state));
     }
 
     toggleConvexA(){
-        this.state.show_convexA = !this.state.show_convexA;
-        this.props.callback(this.state);
+        this.setState({show_convexA: !this.state.show_convexA}, () => this.props.callback(this.state));
     }
 
     toggleGuardiola(){
-        this.state.show_guardiola = !this.state.show_guardiola;
-        this.props.callback(this.state);
+        this.setState({show_guardiola: !this.state.show_guardiola}, () => this.props.callback(this.state));
     }
 
     toggleTrail(){
-        this.state.show_trail = !this.state.show_trail;
-        this.props.callback(this.state);
+        this.setState({show_trail: !this.state.show_trail}, () => this.props.callback(this.state));
     }
 
     toggleDist(){
-        this.state.show_dist = !this.state.show_dist;
-        this.props.callback(this.state);
+        this.setState({show_dist: !this.state.show_dist}, () => this.props.callback(this.state));
     }
 
     toggleDraw(){
-        this.state.free_draw = !this.state.free_draw;
-        this.props.callback(this.state);
+        this.setState({free_draw: !this.state.free_draw}, () => this.props.callback(this.state));
+    }
+
+    togglePlacePlayers(){
+        this.setState({placePlayers: !this.state.placePlayers}, () => this.props.callback(this.state));
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -171,69 +167,111 @@ export default class SideBar extends React.Component {
 
                     </div>
                 ) : (
-                    <button className={"btn btn-block menu "+ (this.state.show_trail ? "btn-primary":"btn-secondary")} onClick={ this.toggleTrail }>
+                    <button title={"Shows a small trail for the players and ball"} className={"btn btn-block menu "+ (this.state.show_trail ? "btn-primary":"btn-secondary")} onClick={ this.toggleTrail }>
                         <i className="fas fa-wave-square"></i>
                         Trails (T)
                     </button>
                 )}
 
-                <button className={"btn btn-block menu "+ (this.state.show_dist ? "btn-primary":"btn-secondary")} onClick={ this.toggleDist }>
+                <button title={"Enables a measuring tool between chosen players"} className={"btn btn-block menu "+ (this.state.show_dist ? "btn-primary":"btn-secondary")} onClick={ this.toggleDist }>
                     <i className="fas fa-ruler"></i>
                     Distances
                 </button>
 
                 <hr/>
 
-                <button className={"btn btn-block menu "+ (this.state.show_convex_exclude_keeper ? "btn-primary":"btn-info")} onClick={ this.toggleExcludeKeeper }>
-                    Exclude keeper
-                </button>
-
-                <button className={"btn btn-block menu "+ (this.state.show_voronoi ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoi }>
+                <button title={"Displays a Voronoi Diagram of the players"} className={"btn btn-block menu "+ (this.state.show_voronoi ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoi }>
                     <i className="fas fa-gem"></i>
-                    Voronoi (V)
+                    Spaces (V)
                 </button>
 
-                <button className={"btn btn-block menu "+ (this.state.show_voronoi_danger ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoiDanger }>
+                <button title={"Higlights potential danger zones in the voronoi diagram"} className={"btn btn-block menu "+ (this.state.show_voronoi_danger ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoiDanger }>
                     <i className="fa fa-warning"></i>
                     Highlight danger zones (Z)
                 </button>
 
-                <button className={"btn btn-block menu "+ (this.state.show_convex ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvex }>
+                <button title={"Displays a Convex Hull for all players"} className={"btn btn-block menu "+ (this.state.show_convex ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvex }>
                     <i className="fas fa-draw-polygon"></i>
-                    Convex hull (C)
+                    Shape (C)
                 </button>
 
-                <button className={"btn btn-block menu "+ (this.state.show_convexH ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvexH }>
+                <button title={"Displays a Convex Hull for the home team"} className={"btn btn-block menu "+ (this.state.show_convexH ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvexH }>
                     <i className="fas fa-draw-polygon"></i>
-                    (Home) Convex hull (H)
+                    (Home) Shape (H)
                 </button>
 
-                <button className={"btn btn-block menu "+ (this.state.show_convexA ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvexA }>
+                <button title={"Displays a Convex Hull for the away team"} className={"btn btn-block menu "+ (this.state.show_convexA ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvexA }>
                     <i className="fas fa-draw-polygon"></i>
-                    (Away) Convex hull (A)
+                    (Away) Shape (A)
                 </button>
+
+                {this.state.show_convexA || this.state.show_convexH &&
+                <button title={"Excludes the keeper from the teams Convex Hull"} className={"btn btn-block menu "+ (this.state.show_convex_exclude_keeper ? "btn-primary":"btn-info")} onClick={ this.toggleExcludeKeeper }>
+                    Exclude keeper (X)
+                </button>
+                }
 
                 <hr/>
 
-                <button className={"btn btn-block menu "+ (this.state.show_guardiola ? "btn-primary":"btn-secondary")} onClick={ this.toggleGuardiola }>
+                <button title={"Shows Guardiola zones on the pitch"} className={"btn btn-block menu "+ (this.state.show_guardiola ? "btn-primary":"btn-secondary")} onClick={ this.toggleGuardiola }>
                     <i className="fas fa-th"></i>
                     Guardiola Zones (G)
                 </button>
 
                 <hr/>
 
-                <button className={"btn btn-block menu "+ (this.state.free_draw ? "btn-primary":"btn-secondary")} onClick={ this.toggleDraw }>
+                <button title={"Enables free drawing mode on the pitch"} className={"btn btn-block menu "+ (this.state.free_draw ? "btn-primary":"btn-secondary")} onClick={ this.toggleDraw }>
                     <i className="fas fa-pencil-alt"></i>
                     Draw (Q)
                 </button>
 
                 <hr/>
 
-                <button className={"btn btn-block menu shutdown btn-danger align-self-end"} onClick={ this.terminate }>
+                <button title={"Shutdown the program and the server"} className={"btn btn-block menu shutdown btn-danger align-self-end"} onClick={ this.terminate }>
                     <i className="fas fa-close"></i>
                     Shutdown
                 </button>
 
+                <KeyboardEventHandler
+                    handleKeys={['v','c','h','a','g','t', 'd', 'q','z','x', 'p']}
+                    onKeyEvent={(key, e) => {{
+                        switch(key){
+                            case 'v':
+                                this.toggleVoronoi()
+                                return;
+                            case 'z':
+                                this.toggleVoronoiDanger()
+                                return;
+                            case 'c':
+                                this.toggleConvex()
+                                return;
+                            case 'h':
+                                this.toggleConvexH()
+                                return;
+                            case 'a':
+                                this.toggleConvexA()
+                                return;
+                            case 'g':
+                                this.toggleGuardiola()
+                                return;
+                            case 't':
+                                this.toggleTrail()
+                                return;
+                            case 'd':
+                                this.toggleDist()
+                                return;
+                            case 'q':
+                                this.toggleDraw()
+                                return;
+                            case 'x':
+                                this.toggleExcludeKeeper()
+                                return;
+                            case 'p':
+                                this.togglePlacePlayers()
+                                return;
+                        }
+                    }}
+                    } />
             </Menu>
         );
     }
