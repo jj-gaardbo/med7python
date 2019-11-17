@@ -217,10 +217,6 @@ export default class App extends React.Component {
                             <DataHandler teamscallback={this.handleTeams} callback={this.handleChange} metaCallback={this.handleMeta} pauseCallback={this.handlePause} videocallback={this.handleVideos} videoperiodcallback={this.handlePeriodLengths}/>
                             {this.state.meta_data !== null &&
                                 <div>
-                                    <span className={"time"}>
-                                        {this.state.time}
-                                    </span>
-
                                     {this.state.has_video &&
                                         <div className={"video-container"}>
                                             <P5SketchVideo dragging={this.state.dragging} paused={this.state.paused} minify={this.state.minify}/>
@@ -260,6 +256,15 @@ export default class App extends React.Component {
 
                                 </div>
                             }
+
+                            <div className="score-board">
+                                {this.state.current_frame && this.state.current_frame.score_board &&
+                                    <p>
+                                        <span className={"time"}>{this.state.time}</span>{this.state.current_frame.score_board.home_team} <span>{this.state.current_frame.score_board.home_score}</span>-<span>{this.state.current_frame.score_board.away_score}</span> {this.state.current_frame.score_board.away_team}
+                                    </p>
+                                }
+                            </div>
+
                             <div className="match-details hidden">
                                 <h2>Details:</h2>
                                 {this.state.current_frame &&

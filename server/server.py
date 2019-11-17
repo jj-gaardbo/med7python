@@ -120,6 +120,15 @@ class ScoreBoard:
         self.home_score = 0
         self.away_score = 0
 
+    def set_home_team(self, name):
+        self.home_team = name
+
+    def set_away_team(self, name):
+        self.away_team = name
+
+
+score_board = ScoreBoard()
+
 
 class DataStruct():
     def __init__(self, index, timestamp, ball):
@@ -158,14 +167,14 @@ class DataStruct():
         self.fps = fps
 
     def handle_match_events(self, iter):
-        global team_data_obj, latest_goal, meta_data_obj
+        global team_data_obj, latest_goal, meta_data_obj, score_board
         if len(team_data_obj) > 0:
             for i in range(len(team_data_obj)):
                 team = team_data_obj[i]
                 if team.side == "Home":
-                    self.score_board.home_team = team.name
+                    score_board.set_home_team(team.name)
                 elif team.side == "Away":
-                    self.score_board.away_team = team.name
+                    score_board.set_away_team(team.name)
                 team_events = team.get_events()
                 bookings = team_events.get_team_bookings()
                 for b in range(len(bookings)):
@@ -181,12 +190,15 @@ class DataStruct():
                     if self.time == goal_time:
                         goals[g].timestamp = self.timestamp
                         self.goal = goals[g]
-                        if team.side == "Home" and not latest_goal == goal_time:
-                            self.score_board.home_score = self.score_board.home_score+1
-                        elif team.side == "Away" and not latest_goal == goal_time:
-                            self.score_board.away_score = self.score_board.away_score+1
-                        latest_goal = goal_time
                         meta_data_obj.add_goal([iter, self.timestamp, goals[g]])
+                        if not latest_goal == goal_time:
+                            if team.side == "Away":
+                                score_board.away_score = score_board.away_score+1
+                            elif team.side == "Home":
+                                score_board.home_score = score_board.home_score+1
+
+                        latest_goal = goal_time
+                    self.score_board = score_board
 
                 substitutions = team_events.get_team_substitutions()
                 for s in range(len(substitutions)):
