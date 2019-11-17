@@ -1,5 +1,6 @@
 import React from "react";
 import KeyboardEventHandler from 'react-keyboard-event-handler';
+import MatchEventHandler from "./MatchEventHandler";
 
 let $ = require('jquery');
 
@@ -196,7 +197,7 @@ export default class DataHandler extends React.Component {
             <div className={"timeline-controls"}>
                 <div className="progress-bar" onClick={this.getTimeFrame} onMouseMove={this._onMouseMove.bind(this)} ref={(div) => {progressBar = div}}>
                     <div className="progress-indicator" style={{width: `${this.getProgress()}%`}}/>
-                    {this.placePeriods()}
+                    <MatchEventHandler dataLength={this.state.dataLength} meta={this.state.meta}/>
                 </div>
                 <div className="button-outer" onClick={this.play}>
                     <div className="play-button"></div>

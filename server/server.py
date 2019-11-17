@@ -45,6 +45,8 @@ data = []
 meta_data = []
 meta_data_obj = None
 team_data_array = []
+team_data_obj = []
+latest_goal = 0
 
 half_lengths = []
 
@@ -111,6 +113,14 @@ class Ball:
             self.action = -1
 
 
+class ScoreBoard:
+    def __init__(self):
+        self.home_team = ""
+        self.away_team = ""
+        self.home_score = 0
+        self.away_score = 0
+
+
 class DataStruct():
     def __init__(self, index, timestamp, ball):
         self.index = index
@@ -124,6 +134,12 @@ class DataStruct():
         self.period_frame = 0
         self.frame = 0
         self.fps = 0
+        self.booking = ""
+        self.booking_player = ""
+        self.goal = ""
+        self.goal_player = ""
+        self.sub = []
+        self.score_board = ScoreBoard()
 
     def set_players(self, players):
         for i in range(len(players)):
@@ -141,6 +157,45 @@ class DataStruct():
         self.period_frame = period_frame
         self.fps = fps
 
+    def handle_match_events(self, iter):
+        global team_data_obj, latest_goal, meta_data_obj
+        if len(team_data_obj) > 0:
+            for i in range(len(team_data_obj)):
+                team = team_data_obj[i]
+                if team.side == "Home":
+                    self.score_board.home_team = team.name
+                elif team.side == "Away":
+                    self.score_board.away_team = team.name
+                team_events = team.get_events()
+                bookings = team_events.get_team_bookings()
+                for b in range(len(bookings)):
+                    booking_time = str(datetime.timedelta(minutes=int(bookings[b].min), seconds=int(bookings[b].sec)))
+                    if self.time == booking_time:
+                        bookings[b].timestamp = self.timestamp
+                        self.booking = bookings[b]
+                        meta_data_obj.add_booking([iter, self.timestamp, bookings[b]])
+
+                goals = team_events.get_team_goals()
+                for g in range(len(goals)):
+                    goal_time = str(datetime.timedelta(minutes=int(goals[g].min), seconds=int(goals[g].sec)))
+                    if self.time == goal_time:
+                        goals[g].timestamp = self.timestamp
+                        self.goal = goals[g]
+                        if team.side == "Home" and not latest_goal == goal_time:
+                            self.score_board.home_score = self.score_board.home_score+1
+                        elif team.side == "Away" and not latest_goal == goal_time:
+                            self.score_board.away_score = self.score_board.away_score+1
+                        latest_goal = goal_time
+                        meta_data_obj.add_goal([iter, self.timestamp, goals[g]])
+
+                substitutions = team_events.get_team_substitutions()
+                for s in range(len(substitutions)):
+                    sub_time = str(datetime.timedelta(minutes=int(substitutions[s].min), seconds=int(substitutions[s].sec)))
+                    if self.time == sub_time:
+                        substitutions[s].timestamp = self.timestamp
+                        self.sub.append(substitutions[s])
+                        meta_data_obj.add_substitution([iter, self.timestamp, substitutions[s]])
+
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__,sort_keys=True, indent=4)
 
@@ -152,6 +207,27 @@ class MetaData:
         self.periods = {}
         self.start_periods = []
         self.video_details = []
+        self.match_events_bookings = []
+        self.match_events_goals = []
+        self.match_events_substitutions = []
+
+    def add_booking(self, booking):
+        for i in range(len(self.match_events_bookings)):
+            if booking[2] in self.match_events_bookings[i]:
+                return
+        self.match_events_bookings.append(booking)
+
+    def add_goal(self, goal):
+        for i in range(len(self.match_events_goals)):
+            if goal[2] in self.match_events_goals[i]:
+                return
+        self.match_events_goals.append(goal)
+
+    def add_substitution(self, substitution):
+        for i in range(len(self.match_events_substitutions)):
+            if substitution[2] in self.match_events_substitutions[i]:
+                return
+        self.match_events_substitutions.append(substitution)
 
     def place_start_periods(self, timestamp, iterator):
         periods = self.get_periods()
@@ -206,7 +282,7 @@ def increment_period_frame(period_no):
 
 
 def clean_data(data, filepath, filename, callback=None):
-    global current_frame, meta_data_obj, progress_str, meta_data, progress_percentage, match_id
+    global current_frame, meta_data_obj, progress_str, meta_data, progress_percentage, match_id, team_data_array
     iter = 0
     period_iter = 0
     seconds = 0
@@ -250,6 +326,7 @@ def clean_data(data, filepath, filename, callback=None):
         frame.set_players(data[i])
         meta_data_obj.place_start_periods(int(current_frame.timestamp), iter)
         meta_data_obj.assign_videos()
+        frame.handle_match_events(iter)
         frames.append(frame.toJSON())
         iter = iter+1
         period_iter = iter+1
@@ -460,6 +537,18 @@ class TeamData:
         self.match_players = []
         self.substitutions = []
 
+    def get_team_score(self):
+        return self.score
+
+    def get_team_bookings(self):
+        return self.bookings
+
+    def get_team_goals(self):
+        return self.goals
+
+    def get_team_substitutions(self):
+        return self.substitutions
+
     def set_bookings(self, bookings_array):
         self.bookings = bookings_array
 
@@ -487,6 +576,8 @@ class Goal:
         self.sec = sec
         self.type = type
         self.player_ref = player_ref
+        self.player = 0
+        self.timestamp = 0
 
 
 class Lineup:
@@ -509,7 +600,10 @@ class Substitution:
         self.sec = sec
         self.sub_off = sub_off
         self.sub_on = sub_on
+        self.player_sub_off = 0
+        self.player_sub_on = 0
         self.substitute_position = substitute_position
+        self.timestamp = 0
 
 
 class Booking:
@@ -519,7 +613,9 @@ class Booking:
         self.min = min
         self.sec = sec
         self.player_ref = player_ref
+        self.player = 0
         self.reason = reason
+        self.timestamp = 0
 
 
 class Team:
@@ -553,15 +649,43 @@ class Team:
         elif side == "Away":
             self.team_letter = "A"
 
+    def get_events(self):
+        return self.events
+
     def add_player(self, player):
         self.players.append(player)
+
+    def get_player_obj(self, ref):
+        for i in range(len(self.players)):
+            if self.players[i].player_reference == ref:
+                return self.players[i]
+        return None
+
+    def assign_players(self):
+        for b in range(len(self.events.bookings)):
+            player_booking = self.get_player_obj(self.events.bookings[b].player_ref)
+            if player_booking is not None:
+                self.events.bookings[b].player = player_booking
+
+        for g in range(len(self.events.goals)):
+            player_goal = self.get_player_obj(self.events.goals[g].player_ref)
+            if player_goal is not None:
+                self.events.goals[g].player = player_goal
+
+        for s in range(len(self.events.substitutions)):
+            player_sub_off = self.get_player_obj(self.events.substitutions[s].sub_off)
+            player_sub_on = self.get_player_obj(self.events.substitutions[s].sub_on)
+            if player_sub_on is not None:
+                self.events.substitutions[s].player_sub_on = player_sub_on
+            if player_sub_off is not None:
+                self.events.substitutions[s].player_sub_off = player_sub_off
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__,sort_keys=True, indent=4)
 
 
 class Player_Detail:
-    def __init__(self, first_name, last_name, known_name, shirt_number, player_reference, position, sub_position, formation_place, status):
+    def __init__(self, first_name, last_name, known_name, shirt_number, player_reference, position, sub_position, formation_place, status, team_name, team_side):
         self.first_name = first_name
         self.last_name = last_name
         self.known_name = known_name
@@ -571,10 +695,12 @@ class Player_Detail:
         self.sub_position = sub_position
         self.formation_place = formation_place
         self.status = status
+        self.team_name = team_name
+        self.team_side = team_side
 
 
 def handle_event_data(filepath, filename):
-    global team_data_array
+    global team_data_array, team_data_obj
 
     string = open(filepath).readlines()
 
@@ -635,10 +761,12 @@ def handle_event_data(filepath, filename):
                         known_name = names.text
 
                 line_up_player = temp.get_match_player(player.get('uID'))
-                player_detail_obj = Player_Detail(first_name, last_name, known_name, line_up_player.shirt_number, player.get('uID'), player.get('Position'), line_up_player.sub_position, line_up_player.formation_place, line_up_player.status)
+                player_detail_obj = Player_Detail(first_name, last_name, known_name, line_up_player.shirt_number, player.get('uID'), player.get('Position'), line_up_player.sub_position, line_up_player.formation_place, line_up_player.status, team.name, team.side)
                 team.add_player(player_detail_obj)
 
+        team.assign_players()
         team_data_array.append(team.toJSON())
+        team_data_obj.append(team)
 
 
 if __name__ == "__main__":

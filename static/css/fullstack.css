@@ -379,13 +379,12 @@ video{
 }
 
 .progress-bar{
-    background-color: #cccccc;
+    background-color: rgba(204, 204, 204, 0.5);
     position: relative;
     float: right;
     height: 40px;
     width: calc(100% - 80px);
     bottom: 0;
-    opacity: 0.5;
     cursor: pointer;
 }
 
@@ -393,7 +392,8 @@ span.time{
     color: #000000;
     font-size: 1.2em;
     font-weight: 600;
-    right: 20px;
+    left: 85px;
+    top: 15px;
     display: block;
     position: absolute;
     z-index: 1;
@@ -410,24 +410,130 @@ span.time{
     font-size: 3em;
 }
 
-.period-indicator{
+.event-marker{
     display: block;
     position: absolute;
     color: #000000;
     box-sizing: border-box;
-    padding: 0 0 0 10px;
+    padding: 0 0 0 0;
     top: 0;
     height: 100%;
 }
 
-.period-indicator::before{
+.event-marker::before{
     content: "";
-    width: 2px;
+    width: 1px;
     position: absolute;
     left: 0;
-    top: 0;
+    bottom: 0;
     background-color: #000000;
-    height: 100%;
+    height: 50%;
+}
+
+.event-marker > i{
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    left: -10px;
+    background-size: cover;
+}
+
+.event-marker i.fas{
+    left:auto;
+    position: relative;
+}
+
+.event-marker i.fa-arrow-down{
+    color: red;
+}
+
+.event-marker i.fa-arrow-up{
+    color: greenyellow;
+}
+
+.event-marker span{
+    display: none;
+}
+
+.goal-icon{
+    background-image: url("../images/ball.png");
+}
+
+.substitution-icon{
+    background-image: url("../images/sub.png");
+}
+
+.booking-icon{
+    border: 1px solid #000;
+    width: 15px!important;
+    height: 20px!important;
+    left: -7px!important;
+}
+
+.booking-icon.Yellow{
+    background-color: rgba(255, 255, 0, 0.50);
+}
+
+.booking-icon.SecondYellow{
+    background-color: rgba(255, 255, 0, 0.50);
+}
+
+.booking-icon.SecondYellow::after{
+    content: "";
+    position: absolute;
+    border: 1px solid #000;
+    width: 15px;
+    height: 20px;
+    display: block;
+    left: 3px;
+    top: 3px;
+    background-color: rgba(255, 0, 0, 0.5);
+}
+
+.booking-icon.Red{
+    background-color: rgba(255, 0, 0, 0.51);
+}
+
+.event-marker:hover > span{
+    display: block;
+}
+
+.event-details{
+    position: absolute;
+    top: 100%;
+    width: 200px;
+    margin-top: 8px;
+    margin-left: -100px;
+    background-color: #001E96;
+    box-sizing: border-box;
+    padding: 10px;
+    color: #fff;
+}
+
+.event-details.nudge{
+    margin-left: -190px;
+}
+
+.event-details p{
+    font-style: italic;
+}
+
+.event-marker span::before{
+    content: "";
+    position: absolute;
+    display: block;
+    background-color: #001E96;
+    width: 10px;
+    height: 10px;
+    top: -5px;
+    left: 50%;
+    transform: rotate(45deg);
+    margin-left: -5px;
+}
+
+.event-details.nudge::before{
+    left: 100%;
+    margin-left: -15px;
 }
 
 .progress-indicator{
@@ -497,6 +603,10 @@ span.time{
 .file-drop > .file-drop-target.file-drop-dragging-over-target {
     color: #ff6e40;
     box-shadow: 0 0 13px 3px #ff6e40;
+}
+
+.match-events span:first-child i{
+    left: -5px;
 }
 
 .match-details{
