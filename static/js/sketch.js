@@ -44,6 +44,8 @@ export default class P5Sketch extends Component {
     constructor(props){
         super(props);
         this.state = {
+            home_col: "",
+            away_col: "",
             players: [],
             allSet: false,
             paused:null,
@@ -112,6 +114,11 @@ export default class P5Sketch extends Component {
         for(let i = 0; i < players.length; i++){
             if(this.validatePlayer(players[i])){
                 let team = this.getPlayerTeam(players[i].team);
+                if(team.team_letter === HOME){
+                    this.setState({home_col: team.color_primary})
+                } else {
+                    this.setState({away_col: team.color_primary})
+                }
                 let playerDetails = this.getPlayerDetails(players[i].shirt_number, team);
                 this.state.players.push(new Player(players[i].x_pos, players[i].y_pos, players[i].team, players[i].tag_id, players[i].shirt_number, playerDetails, team.color_primary, team.color_secondary, team.name));
             }
@@ -357,9 +364,9 @@ export default class P5Sketch extends Component {
 
         displayConvexHull(p5, context, voronoi, delaunay, this.state.show_convex_hull, "#00ff0044");
 
-        displayConvexHull(p5, context, voronoi_h, delaunay, this.state.show_convex_hull_h, "#ffffff44");
+        displayConvexHull(p5, context, voronoi_h, delaunay, this.state.show_convex_hull_h, this.state.home_col+"66");
 
-        displayConvexHull(p5, context, voronoi_a, delaunay, this.state.show_convex_hull_a, "#ff000044");
+        displayConvexHull(p5, context, voronoi_a, delaunay, this.state.show_convex_hull_a, this.state.away_col+"66", true);
 
         displayGuardiolaZones(p5, this.state.show_guardiola);
 

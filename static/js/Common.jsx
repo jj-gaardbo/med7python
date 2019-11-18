@@ -272,17 +272,59 @@ export function checkPossession(ball, players, callback){
 }
 
 function getPois(indexList, pointArray){
-    let value = [0, 0, 0, 0];
+    let x_arr = []
+    let y_arr = []
+    for(let x = 0; x < indexList.length; x++){
+        y_arr.push(pointArray[(indexList[x]*2)+1])
+        x_arr.push(pointArray[indexList[x]*2])
+    }
+    y_arr.sort((a, b) => a - b);
+    x_arr.sort((a, b) => a - b)
 
-    return value
+    return [x_arr[0], x_arr[x_arr.length-1], y_arr[0], y_arr[y_arr.length-1]];
 }
 
-export function displayConvexHull(p5, context, voronoi, delaunay, active, fill){
+export function displayConvexHull(p5, context, voronoi, delaunay, active, fill, away=false){
     if(active && delaunay != null){
-        let poi = getPois(delaunay.hull, delaunay.points);
+        let distance_x, distance_y, mid_x, mid_y;
+        p5.strokeWeight(1)
         context.fillStyle = fill;
         context.beginPath();
         voronoi.delaunay.renderHull(context);
         context.fill();
+
+        let poi = getPois(voronoi.delaunay.hull, voronoi.delaunay.points);
+        distance_x = p5.dist(poi[0], 10, poi[1], 10)/12;
+        distance_y = p5.dist(poi[2], 10, poi[3], 10)/12;
+        mid_x=poi[0]+((poi[1]-poi[0])*0.5);
+        mid_y=poi[2]+((poi[3]-poi[2])*0.5);
+
+        p5.strokeWeight(5)
+        p5.textSize(20)
+        p5.textStyle(p5.BOLD)
+        p5.textAlign(p5.CENTER)
+        p5.stroke(fill)
+        if(!away){
+            p5.line(poi[0], 10, poi[1], 10)
+            p5.line(10, poi[2], 10, poi[3])
+            p5.strokeWeight(1)
+            p5.stroke("#000000")
+            context.fillStyle = "#ffffff";
+            p5.text(distance_x.toFixed(2)+"m", mid_x, 20)
+            p5.text(distance_y.toFixed(2)+"m", 40, mid_y)
+            context.fill();
+        } else {
+            p5.line(poi[0], HEIGHT-10, poi[1], HEIGHT-10)
+            p5.line(WIDTH-10, poi[2], WIDTH-10, poi[3])
+            p5.strokeWeight(1)
+            p5.stroke("#000000")
+            context.fillStyle = "#ffffff";
+            p5.text(distance_x.toFixed(2)+"m", mid_x, HEIGHT-10)
+            p5.text(distance_y.toFixed(2)+"m", WIDTH-40, mid_y)
+            context.fill();
+        }
+        p5.textSize(12)
+        p5.strokeWeight(1)
+
     }
 }
