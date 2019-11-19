@@ -598,10 +598,6 @@ span.time{
     font-size: 2em;
 }
 
-.file-drop strong{
-    text-decoration: underline;
-}
-
 .file-drop > .file-drop-target {
     position: absolute;
     top: 0;

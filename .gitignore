@@ -29,4 +29,3 @@ server/*.dat
 server/*.xml
 *.lock
 static/dist
-
