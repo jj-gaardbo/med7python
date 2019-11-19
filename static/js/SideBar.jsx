@@ -15,7 +15,7 @@ export default class SideBar extends React.Component {
             show_voronoi : false,
             show_voronoi_danger: false,
             show_convex : false,
-            show_convex_exclude_keeper: false,
+            show_convex_exclude_keeper: true,
             show_convexH : false,
             show_convexA : false,
             show_cuardiola: false,
