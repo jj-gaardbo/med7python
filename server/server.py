@@ -435,44 +435,47 @@ def upload_file():
     if 'file' not in request.files:
         flash('No file part')
         return redirect(request.url)
-    file = request.files['file']
-    # if user does not select file, browser also
-    # submit an empty part without filename
-    if file.filename == '':
-        flash('No selected file')
-        return redirect(request.url)
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-        filetype = check_file_type(filename)
+    files_list = request.files.getlist("file")
 
-        if filetype == 'mp4':
-            filepath = os.path.join(app.config['STATIC_FOLDER'], filename)
+    for file in files_list:
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-        if not os.path.isfile(filepath):
-            file.save(filepath)
+            filetype = check_file_type(filename)
 
-        if "f7.xml" in filename:
-            handle_event_data(filepath, filename)
-        elif filetype == "xml":
-            handle_meta_data(filepath)
-        elif filetype == "dat":
-            process_data(filepath, filename)
-        elif filetype == "mp4":
-            handle_video_file(filepath, filename)
+            if filetype == 'mp4':
+                filepath = os.path.join(app.config['STATIC_FOLDER'], filename)
 
-        return redirect(url_for('uploaded_file', filename=filename))
+            if not os.path.isfile(filepath):
+                file.save(filepath)
+
+            if "f7.xml" in filename:
+                handle_event_data(filepath, filename)
+            elif "metadata.xml" in filename:
+                handle_meta_data(filepath)
+            elif filetype == "dat":
+                process_data(filepath, filename)
+            elif filetype == "mp4":
+                handle_video_file(filepath, filename)
+
+    return redirect(url_for('uploaded_file', msg="success"))
 
 
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return check_file_type(filename)
+@app.route('/uploads/<msg>')
+def uploaded_file(msg):
+    return msg
 
 
 @app.route("/has_data")
 def has_data():
-    if len(frames) > 0 and len(meta_data) > 0:
+    if len(frames) > 0 and len(meta_data) > 0 and len(team_data_array) > 0:
         return "1"
     return "0"
 
@@ -510,7 +513,7 @@ def open_browser():
 
 
 def run_app():
-    Timer(1, open_browser).start()
+    #Timer(1, open_browser).start()
     app.run()
 
 

@@ -21,7 +21,7 @@ class ReactFileDrop extends React.Component {
 
     handleData = (msg, status, jqXHR) => {
         if(status === "success"){
-            this.setState({files_recieved: true, data_processed: true});
+            this.setState({data_processed: true});
             $('progress').addClass("hidden");
             this.props.callback(msg, this.state.intervalID)
         }
@@ -45,10 +45,29 @@ class ReactFileDrop extends React.Component {
 
     handleDrop = (files, event) => {
         event.preventDefault();
+        let file_array = [];
+        let hold_out = [];
         let formData = new FormData();
-        formData.append('file', files[0]);
+        for(let i = 0; i < files.length; i++){
+            if(files[i].type === "video/mp4") {
+                file_array.splice(0, 0, files[i]);
+            }
+            else if(files[i].name.includes("f7")){
+                file_array.splice(3, 0, files[i]);
+            } else if(files[i].name.includes("meta")){
+                file_array.splice(2, 0, files[i]);
+            } else if(files[i].type === ""){
+                file_array.push(files[i]);
+            }
+        }
+
+        for(let i = 0; i < file_array.length; i++){
+            console.log(file_array[i])
+            formData.append('file', file_array[i]);
+        }
         let self = this;
-        this.state.files = files[0];
+        this.state.files = file_array;
+        this.setState({files_recieved: true});
         $.ajax({
             // Your server script to process the upload
             url: window.location.href + 'upload_file',
