@@ -83,11 +83,12 @@ class ReactFileDrop extends React.Component {
         return (
             <div id="react-file-drop">
                 <FileDrop onDrop={this.handleDrop}>
-
                     <p>
-                        1. Drop .mp4 video file for each half<br/>
-                        2. Drop .xml meta file and f7 file<br/>
-                        3. Drop .dat data file
+                        1. Drop <strong>*_1.mp4</strong> video file for the <strong>first half</strong> and wait for upload<br/>
+                        2. Drop <strong>*_2.mp4</strong> video file for the <strong>second half</strong> and wait for upload<br/>
+                        3. Drop the <strong>*_metadata.xml file</strong><br/>
+                        4. Drop the <strong>f7.xml file</strong><br/>
+                        5. Drop <strong>*.dat</strong> data file and wait for upload and process
                     </p>
                     <progress className={"upload-progress hidden"}></progress>
                     {!this.state.files_recieved &&

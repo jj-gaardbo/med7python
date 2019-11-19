@@ -43,7 +43,7 @@ export default class DataHandler extends React.Component {
 
     _onMouseMove(e) {
         const elementWidth = progressBar.getBoundingClientRect().width;
-        this.setState({ x: e.screenX, percentage: (e.screenX-80)/elementWidth*100 });
+        this.setState({ x: e.clientX, percentage: (e.clientX-80)/elementWidth*100 });
     }
 
     getTimeFrame(){

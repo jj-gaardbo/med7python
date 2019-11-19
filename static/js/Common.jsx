@@ -150,15 +150,15 @@ function checkDangerZone(p5, cell){
             }
         }
     }
-    return avgDangerValue/count;
+    return (avgDangerValue/count)*count;
 }
 
 
 export function displayDangerZones(p5, voronoi, active){
     if(!active){return;}
     for (const cell of voronoi.cellPolygons()) {
-        let danger = checkDangerZone(p5, cell);
-        if(danger >= 0.5){
+        let danger = checkDangerZone(p5, cell)*0.01;
+        if(danger >= 0.1){
             p5.fill(p5.color(255*danger,0,0, 255*danger));
             p5.beginShape();
             for(let i = 0; i < cell.length; i++){

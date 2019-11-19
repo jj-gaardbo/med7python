@@ -147,6 +147,16 @@ export default class MatchEventHandler extends React.Component {
         this.state.periods = DOM;
     }
 
+    updateDimensions = () => {
+        this.setState({ periods: null, subs: null, goals:null, bookings:null});
+    };
+    componentDidMount() {
+        window.addEventListener('resize', this.updateDimensions);
+    }
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.updateDimensions);
+    }
+
     render () {
 
         return(
