@@ -36,6 +36,11 @@ const config = {
     },
     plugins: [
         new ExtractTextPlugin('styles.css'),
+        new ExtractTextPlugin('all.min.css'),
+        new ExtractTextPlugin('bootstrap.min.css'),
+        new ExtractTextPlugin('brands.min.css'),
+        new ExtractTextPlugin('font-awesome.min.css'),
+        new ExtractTextPlugin('regular.min.css'),
         new CopyPlugin([
             { from: __dirname+'/libs', to: __dirname+'/dist' },
         ]),
