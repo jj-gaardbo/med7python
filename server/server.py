@@ -513,7 +513,7 @@ def open_browser():
 
 
 def run_app():
-    #Timer(1, open_browser).start()
+    Timer(1, open_browser).start()
     app.run()
 
 

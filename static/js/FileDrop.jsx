@@ -43,10 +43,38 @@ class ReactFileDrop extends React.Component {
         });
     }
 
+    validateFiles(file_array){
+        let alert = "";
+        let missing = [
+            ".dat",
+            "f7.xml",
+            "metadata.xml",
+            "_1.mp4",
+            "_2.mp4"
+        ];
+        for(let i = 0; i < file_array.length; i++){
+            if(file_array[i].name.includes(".dat")){
+                missing = missing.filter(e => e !== ".dat");
+            }
+            if(file_array[i].name.includes("f7")) {
+                missing = missing.filter(e => e !== "f7.xml");
+            }
+            if(file_array[i].name.includes("metadata.xml")){
+                missing = missing.filter(e => e !== "metadata.xml");
+            }
+            if(file_array[i].name.includes("_1.mp4")){
+                missing = missing.filter(e => e !== "_1.mp4");
+            }
+            if(file_array[i].name.includes("_2.mp4")){
+                missing = missing.filter(e => e !== "_2.mp4");
+            }
+        }
+        return missing;
+    }
+
     handleDrop = (files, event) => {
         event.preventDefault();
         let file_array = [];
-        let hold_out = [];
         let formData = new FormData();
         for(let i = 0; i < files.length; i++){
             if(files[i].type === "video/mp4") {
@@ -61,10 +89,16 @@ class ReactFileDrop extends React.Component {
             }
         }
 
+        let validate = this.validateFiles(file_array);
+        if(validate.length > 0){
+            alert("Missing files: \n" + JSON.stringify(validate));
+            return;
+        }
+
         for(let i = 0; i < file_array.length; i++){
-            console.log(file_array[i])
             formData.append('file', file_array[i]);
         }
+
         let self = this;
         this.state.files = file_array;
         this.setState({files_recieved: true});
@@ -103,12 +137,16 @@ class ReactFileDrop extends React.Component {
             <div id="react-file-drop">
                 <FileDrop onDrop={this.handleDrop}>
                     <p>
-                        1. Drop <strong>*_1.mp4</strong> video file for the <strong>first half</strong> and wait for upload<br/>
-                        2. Drop <strong>*_2.mp4</strong> video file for the <strong>second half</strong> and wait for upload<br/>
-                        3. Drop the <strong>*_metadata.xml file</strong><br/>
-                        4. Drop the <strong>f7.xml file</strong><br/>
-                        5. Drop <strong>*.dat</strong> data file and wait for upload and process
+                        Drop match data files here <br/>
+                        File requirements: <br/>
+
+                        <strong>*_1.mp4</strong> <br/>
+                        <strong>*_2.mp4</strong> <br/>
+                        <strong>*_metadata.xml file</strong> <br/>
+                        <strong>f7.xml</strong> <br/>
+                        <strong>*.dat</strong>
                     </p>
+
                     <progress className={"upload-progress hidden"}></progress>
                     {!this.state.files_recieved &&
                     <button className={"freehand btn btn-primary"} onClick={this.props.freehandSketch}><i className="fa fa-edit"></i>Free hand</button>
