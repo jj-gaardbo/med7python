@@ -84,7 +84,6 @@ export default class App extends React.Component {
     }
 
     seekVideo(){
-        if(this.state.paused){return};
         this.player.seekTo(parseFloat(this.state.current_frame.period_seconds+parseInt(this.state.finetune)),'seconds');
     }
 
@@ -110,8 +109,13 @@ export default class App extends React.Component {
 
         this.setState({current_frame:parsed,status:parsed.ball.status,possession:parsed.ball.possession, time:parsed.time, frame_index: index});
 
+
         if(timeline){
-            this.stopVideo();
+            this.seekVideo();
+            if(this.state.paused){
+                this.stopVideo();
+                this.handlePause(true, false)
+            }
         }
         else if(this.state.has_video){
             this.playVideo();

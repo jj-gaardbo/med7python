@@ -738,7 +738,7 @@ def handle_event_data(filepath, filename):
 
         temp.set_bookings(booking_array)
         for goal in team_event.iter("Goal"):
-            goals_array.append(Goal(goal.get("Min"), goal.get("Sec"), goal.get("Type"), goal.get("PlayerRef")))
+            goals_array.append(Goal(goal.get("Min"), str(int(goal.get("Sec"))+4), goal.get("Type"), goal.get("PlayerRef")))
 
         temp.set_goals(goals_array)
         for match_player in team_event.iter("MatchPlayer"):

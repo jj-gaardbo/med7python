@@ -142,7 +142,7 @@ class ReactFileDrop extends React.Component {
 
                         <strong>*_1.mp4</strong> <br/>
                         <strong>*_2.mp4</strong> <br/>
-                        <strong>*_metadata.xml file</strong> <br/>
+                        <strong>*_metadata.xml</strong> <br/>
                         <strong>f7.xml</strong> <br/>
                         <strong>*.dat</strong>
                     </p>
