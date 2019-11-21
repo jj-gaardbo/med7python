@@ -400,6 +400,11 @@ def video_details():
     return jsonify(video_files)
 
 
+@app.route("/time")
+def time():
+    return get_data(int(request.args.get('frame')))
+
+
 @app.route("/data")
 def data():
     frame = request.args.get('frame')

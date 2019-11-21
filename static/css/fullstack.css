@@ -433,6 +433,27 @@ span.time{
     cursor: pointer;
 }
 
+.time-indicator::before{
+    bottom: -6px;
+    left: -5px;
+    position:relative;
+    width: 1px;
+    height: 40px;
+    background-color: #000000;
+    content: "";
+    display: inline-block;
+    margin-right:5px;
+}
+
+.time-indicator{
+    position: absolute;
+    bottom: 0;
+    color: black;
+    box-sizing: border-box;
+    display: inline-block;
+    margin-left: 5px;
+}
+
 .file-processing progress{
     bottom: 0;
     height: 40px;

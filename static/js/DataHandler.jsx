@@ -22,7 +22,10 @@ export default class DataHandler extends React.Component {
             meta: null,
             period_pos: "",
             video_details: "",
-            teams: []
+            teams: [],
+            mouse_timer: null,
+            mouse_isIntervalSet: false,
+            hover_time: 0
         };    // This binding is necessary to make `this` work in the callback
 
         this.getPythonData = this.getPythonData.bind(this);
@@ -41,9 +44,34 @@ export default class DataHandler extends React.Component {
         this.placePeriods = this.placePeriods.bind(this);
     }
 
+    disable_hover(){
+        this.state.mouse_isIntervalSet = false
+        window.clearTimeout(this.state.mouse_timer);
+        this.state.mouse_timer = null;
+    }
+
+    _onMouseLeave(e) {
+        this.disable_hover()
+    }
+
     _onMouseMove(e) {
+        let self = this;
         const elementWidth = progressBar.getBoundingClientRect().width;
         this.setState({ x: e.clientX, percentage: (e.clientX-80)/elementWidth*100 });
+
+        if(this.state.dataLength !== 0){
+            if (this.state.mouse_isIntervalSet) {
+                return;
+            }
+
+            this.state.mouse_timer = window.setInterval(function() {
+                let frameToFind = Math.round(self.state.dataLength / 100 * self.state.percentage);
+                $.get(window.location.href + 'time?frame='+frameToFind, (time) => {
+                    self.setState({hover_time: JSON.parse(time).time})
+                });
+            }, 700);
+            this.state.mouse_isIntervalSet = true;
+        }
     }
 
     getTimeFrame(){
@@ -195,8 +223,11 @@ export default class DataHandler extends React.Component {
         const { x } = this.state.x;
         return (
             <div className={"timeline-controls"}>
-                <div className="progress-bar" onClick={this.getTimeFrame} onMouseMove={this._onMouseMove.bind(this)} ref={(div) => {progressBar = div}}>
+                <div className="progress-bar" onClick={this.getTimeFrame} onMouseLeave={this._onMouseLeave.bind(this)} onMouseMove={this._onMouseMove.bind(this)} ref={(div) => {progressBar = div}}>
                     <div className="progress-indicator" style={{width: `${this.getProgress()}%`}}/>
+                    {this.state.mouse_isIntervalSet &&
+                        <span className="time-indicator" style={ { left: `${ this.state.percentage }%` } }>{this.state.hover_time}</span>
+                    }
                     <MatchEventHandler dataLength={this.state.dataLength} meta={this.state.meta}/>
                 </div>
                 <div className="button-outer" onClick={this.play}>
