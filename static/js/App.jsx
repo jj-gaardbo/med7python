@@ -204,7 +204,10 @@ export default class App extends React.Component {
 
     render() {
         if(this.state.terminated){
-            return(<p>Goodbye</p>)
+            return(<p className={"goodbye"}>
+                <strong> The server was terminated </strong> <br/>
+                You can now close your browser
+            </p>)
         } else {
             return(
                 <div className={"main " + (this.state.minify ? 'minify' : '') + (this.state.minify && this.state.paused ? ' draw' : '')} id="page-wrap">
