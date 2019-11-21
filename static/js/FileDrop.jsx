@@ -12,7 +12,8 @@ class ReactFileDrop extends React.Component {
             data_processed: null,
             intervalID: 0,
             timeout: 5000,
-            processing: null
+            processing: null,
+            temp_files: []
         };
 
         this.handleDrop = this.handleDrop.bind(this);
@@ -72,10 +73,32 @@ class ReactFileDrop extends React.Component {
         return missing;
     }
 
+    containsObject(name) {
+        for (let x = 0; x < this.state.temp_files.length; x++) {
+            if (this.state.temp_files[x].name == name) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     handleDrop = (files, event) => {
         event.preventDefault();
         let file_array = [];
-        let formData = new FormData();
+
+        if(files.length < 5){
+            for(let f = 0; f < files.length; f++){
+                if(!this.containsObject(files[f].name)){
+                    this.state.temp_files.push(files[f])
+                }
+            }
+            if(this.state.temp_files.length < 5){
+                return;
+            } else {
+                files = this.state.temp_files;
+            }
+        }
+
         for(let i = 0; i < files.length; i++){
             if(files[i].type === "video/mp4") {
                 file_array.splice(0, 0, files[i]);
@@ -95,6 +118,7 @@ class ReactFileDrop extends React.Component {
             return;
         }
 
+        let formData = new FormData();
         for(let i = 0; i < file_array.length; i++){
             formData.append('file', file_array[i]);
         }

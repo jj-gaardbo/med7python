@@ -72,8 +72,12 @@ export default class P5Sketch extends Component {
             show_guardiola: false,
             show_trail: false,
             show_dist: false,
-            free_draw: false
+            free_draw: false,
+            possession_player: null
+
         }
+
+        this.handleTerminate = this.handleTerminate.bind(this)
     }
 
     componentDidMount = () => {
@@ -405,10 +409,14 @@ export default class P5Sketch extends Component {
         return true;
     }
 
+    handleTerminate(){
+        this.props.terminate()
+    }
+
     render() {
         return (
             <div>
-                <SideBar freehand={false} callback={this.handleSidebarStates} sketchStates={this.state} />
+                <SideBar terminateCB={this.handleTerminate} freehand={false} callback={this.handleSidebarStates} sketchStates={this.state} />
 
                 <Draggable
                     onMouseDown={(e) => this.handleDragging(true)}

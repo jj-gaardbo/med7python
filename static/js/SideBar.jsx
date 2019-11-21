@@ -51,7 +51,7 @@ export default class SideBar extends React.Component {
     terminate(){
         if (confirm("Are you sure you want to shutdown?") === true) {
             $.post(window.location.href + 'terminate', (resp) => {
-                alert("Server terminated. Goodbye!");
+                this.props.terminateCB()
             });
         }
     }

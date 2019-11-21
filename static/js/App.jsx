@@ -47,7 +47,8 @@ export default class App extends React.Component {
                 set_home: 0
             },
             intervalID:0,
-            team_data: []
+            team_data: [],
+            terminated:false
         };
 
         this.openFreeHandSketch = this.openFreeHandSketch.bind(this);
@@ -197,106 +198,113 @@ export default class App extends React.Component {
         this.setState({dragging:bool})
     };
 
+    handleTerminate = () => {
+        this.setState({terminated:true})
+    };
+
     render() {
-        return(
-            <div className={"main " + (this.state.minify ? 'minify' : '') + (this.state.minify && this.state.paused ? ' draw' : '')} id="page-wrap">
-                {this.state.freehand ? (
-                <div className='header-contents freehand-sketch'>
-                    <P5FreeSketch possession={this.state.possession}/>
-                </div>
-                ) : (
-                    <div>
-                    {!this.state.has_files ? (
-                        <ReactFileDrop callback={this.handleFileUploaded} freehandSketch={this.openFreeHandSketch}></ReactFileDrop>
+        if(this.state.terminated){
+            return(<p>Goodbye</p>)
+        } else {
+            return(
+                <div className={"main " + (this.state.minify ? 'minify' : '') + (this.state.minify && this.state.paused ? ' draw' : '')} id="page-wrap">
+                    {this.state.freehand ? (
+                    <div className='header-contents freehand-sketch'>
+                        <P5FreeSketch possession={this.state.possession}/>
+                    </div>
                     ) : (
-                        <div className='header-contents'>
-                            <DataHandler teamscallback={this.handleTeams} callback={this.handleChange} metaCallback={this.handleMeta} pauseCallback={this.handlePause} videocallback={this.handleVideos} videoperiodcallback={this.handlePeriodLengths}/>
-                            {this.state.meta_data !== null &&
-                                <div>
-                                    {this.state.has_video &&
-                                        <div className={"video-container"}>
-                                            <P5SketchVideo dragging={this.state.dragging} paused={this.state.paused} minify={this.state.minify}/>
-                                            {this.state.currentVideo !== "" &&
-                                                <ReactPlayer
-                                                    width={"100%"}
-                                                    ref={this.ref}
-                                                    url={'./dist/static/'+this.state.currentVideo}
-                                                    onSeek={e => console.log('onSeek', e)}
-                                                    playing={!this.state.paused}
-                                                    playbackRate={parseFloat(this.state.playbackRate)}
-                                                />
-                                            }
-                                            <div className={"video-controls"}>
-                                                <label htmlFor="finetunerange">
-                                                    Playback offset <br/>
-                                                    <input id="finetunerange" type="range" min={-4} max={4} step={0.01} value={this.state.finetune} onChange={this.handleFineTune}/>
-                                                    <p>{this.state.finetune} sec.</p>
-                                                </label>
+                        <div>
+                        {!this.state.has_files ? (
+                            <ReactFileDrop callback={this.handleFileUploaded} freehandSketch={this.openFreeHandSketch}></ReactFileDrop>
+                        ) : (
+                            <div className='header-contents'>
+                                {this.state.meta_data !== null &&
+                                    <div>
+                                        {this.state.has_video &&
+                                            <div className={"video-container"}>
+                                                <P5SketchVideo dragging={this.state.dragging} paused={this.state.paused} minify={this.state.minify}/>
+                                                {this.state.currentVideo !== "" &&
+                                                    <ReactPlayer
+                                                        width={"100%"}
+                                                        ref={this.ref}
+                                                        url={'./dist/static/'+this.state.currentVideo}
+                                                        onSeek={e => console.log('onSeek', e)}
+                                                        playing={!this.state.paused}
+                                                        playbackRate={parseFloat(this.state.playbackRate)}
+                                                    />
+                                                }
+                                                <div className={"video-controls"}>
+                                                    <label htmlFor="finetunerange">
+                                                        Playback offset <br/>
+                                                        <input id="finetunerange" type="range" min={-4} max={4} step={0.01} value={this.state.finetune} onChange={this.handleFineTune}/>
+                                                        <p>{this.state.finetune} sec.</p>
+                                                    </label>
 
-                                                <label htmlFor="playbackrate">
-                                                    Playback rate <br/>
-                                                    <input id="playbackrate" type="range" min={0} max={2} step={0.01} value={this.state.playbackRate} onChange={this.handlePlaybackRate}/>
-                                                    <p>{this.state.playbackRate} speed</p>
-                                                </label>
+                                                    <label htmlFor="playbackrate">
+                                                        Playback rate <br/>
+                                                        <input id="playbackrate" type="range" min={0} max={2} step={0.01} value={this.state.playbackRate} onChange={this.handlePlaybackRate}/>
+                                                        <p>{this.state.playbackRate} speed</p>
+                                                    </label>
 
-                                                <label htmlFor="resyncrate">
-                                                    Resync rate <br/>
-                                                    <input id="resyncrate" type="range" min={0} max={10000} step={1000} value={this.state.timeout} onChange={this.handleResyncRate}/>
-                                                    <p>{this.state.timeout/1000} sec.</p>
-                                                </label>
+                                                    <label htmlFor="resyncrate">
+                                                        Resync rate <br/>
+                                                        <input id="resyncrate" type="range" min={0} max={10000} step={1000} value={this.state.timeout} onChange={this.handleResyncRate}/>
+                                                        <p>{this.state.timeout/1000} sec.</p>
+                                                    </label>
+                                                </div>
                                             </div>
-                                        </div>
-                                    }
+                                        }
 
-                                    <P5Sketch dragCallback={this.handleDrag} possessioncb={this.possession} larger={this.state.larger} minify={this.state.minify} team_data={this.state.team_data} meta_data={this.state.meta_data} frame_index={this.state.frame_index} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
+                                        <P5Sketch terminate={this.handleTerminate} dragCallback={this.handleDrag} possessioncb={this.possession} larger={this.state.larger} minify={this.state.minify} team_data={this.state.team_data} meta_data={this.state.meta_data} frame_index={this.state.frame_index} current_frame={this.state.current_frame} paused={[this.state.paused, this.state.newframe]}></P5Sketch>
 
-                                </div>
-                            }
-
-                            <div className="score-board">
+                                    </div>
+                                }
+                                <DataHandler teamscallback={this.handleTeams} callback={this.handleChange} metaCallback={this.handleMeta} pauseCallback={this.handlePause} videocallback={this.handleVideos} videoperiodcallback={this.handlePeriodLengths}/>
                                 {this.state.current_frame && this.state.current_frame.score_board &&
+                                <div className="score-board">
                                     <p>
-                                        <span className={"time"}>{this.state.time}</span>{this.state.current_frame.score_board.home_team} <span>{this.state.current_frame.score_board.home_score}</span>-<span>{this.state.current_frame.score_board.away_score}</span> {this.state.current_frame.score_board.away_team}
+                                        {this.state.possession_player !== null &&
+                                        <span className="possession-div">
+                                            {this.state.possession_player.firstname + " " + this.state.possession_player.lastname + " : " + this.state.possession_player.team_name}
+                                        </span>
+                                        }
+                                        {this.state.current_frame.score_board.home_team} <span>{this.state.current_frame.score_board.home_score}</span>-<span>{this.state.current_frame.score_board.away_score}</span> {this.state.current_frame.score_board.away_team} <span className={"time"}>{this.state.time}</span>
                                     </p>
-                                }
-                            </div>
-
-                            <div className="match-details hidden">
-                                <h2>Details:</h2>
-                                {this.state.current_frame &&
-                                    <p>TimeFrame: {this.state.current_frame.timestamp}</p>
-                                }
-                                <p>Status: {this.state.status}</p>
-                                <p>Possession: {this.state.possession}</p>
-                                {this.state.ball_action !== null &&
-                                    <p>Action: {this.state.ball_action}</p>
-                                }
-                                <p>B4: {this.state.actions.b4}</p>
-                                <p>SetAway: {this.state.actions.set_away}</p>
-                                <p>SetHome: {this.state.actions.set_home}</p>
-                            </div>
-
-                            {this.state.minify &&
-                                <button className={"btn larger " + (this.state.larger ? 'btn-secondary' : 'btn-default')} onClick={this.toggleSizeLarger}>
-                                    {this.state.larger ? (
-                                        <i className="fas fa-search-minus"></i>
-                                    ) : (
-                                        <i className="fas fa-search-plus"></i>
-                                    )}
-                                    2x</button>
-                            }
-                            <button className={"btn btn-primary fullscreen"} onClick={this.toggleSize}>{!this.state.minify ? ("Show video") : ("Edit Board")}</button>
-
-                            {this.state.possession_player !== null &&
-                                <div className="possession-div">
-                                    {this.state.possession_player.firstname + " " + this.state.possession_player.lastname + " : " + this.state.possession_player.team_name}
                                 </div>
-                            }
+                                }
+
+                                <div className="match-details hidden">
+                                    <h2>Details:</h2>
+                                    {this.state.current_frame &&
+                                        <p>TimeFrame: {this.state.current_frame.timestamp}</p>
+                                    }
+                                    <p>Status: {this.state.status}</p>
+                                    <p>Possession: {this.state.possession}</p>
+                                    {this.state.ball_action !== null &&
+                                        <p>Action: {this.state.ball_action}</p>
+                                    }
+                                    <p>B4: {this.state.actions.b4}</p>
+                                    <p>SetAway: {this.state.actions.set_away}</p>
+                                    <p>SetHome: {this.state.actions.set_home}</p>
+                                </div>
+
+                                {this.state.minify &&
+                                    <button className={"btn larger " + (this.state.larger ? 'btn-secondary' : 'btn-default')} onClick={this.toggleSizeLarger}>
+                                        {this.state.larger ? (
+                                            <i className="fas fa-search-minus"></i>
+                                        ) : (
+                                            <i className="fas fa-search-plus"></i>
+                                        )}
+                                        2x</button>
+                                }
+                                <button className={"btn btn-primary fullscreen"} onClick={this.toggleSize}>{!this.state.minify ? ("Show video") : ("Edit Board")}</button>
+
+                            </div>
+                        )}
                         </div>
                     )}
-                    </div>
-                )}
-            </div>
-        )
+                </div>
+            )
+        }
     }
 }
