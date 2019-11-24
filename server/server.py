@@ -33,7 +33,12 @@ w = 1360
 h = 916
 buffer = 40
 
+
 frames = []
+team_data_obj = []
+meta_data_obj = None
+
+all_data = []
 current_frame = -1
 
 fseven_file = ""
@@ -43,9 +48,8 @@ video_files = []
 
 data = []
 meta_data = []
-meta_data_obj = None
 team_data_array = []
-team_data_obj = []
+
 latest_goal = 0
 
 half_lengths = []
@@ -348,6 +352,15 @@ def clean_data(data, filepath, filename, callback=None):
 
     if callback:
         callback()
+
+
+def get_all_data():
+    return jsonify([frames, team_data_array, meta_data])
+
+
+@app.route("/all_data")
+def all_data():
+    return get_all_data()
 
 
 def get_data(n):

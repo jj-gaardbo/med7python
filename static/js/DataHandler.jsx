@@ -29,6 +29,7 @@ export default class DataHandler extends React.Component {
         };    // This binding is necessary to make `this` work in the callback
 
         this.getPythonData = this.getPythonData.bind(this);
+        this.getAllPythonData = this.getAllPythonData.bind(this);
         this.getPythonDataSize = this.getPythonDataSize.bind(this);
         this.getTimeFrame = this.getTimeFrame.bind(this);
         this.getTimeFrameFwdRew = this.getTimeFrameFwdRew.bind(this);
@@ -131,6 +132,12 @@ export default class DataHandler extends React.Component {
         });
     }
 
+    getAllPythonData() {
+        $.get(window.location.href + 'all_data', (data) => {
+            this.setState({all_data: data});
+        });
+    }
+
     getPythonData() {
         let self = this;
         let frame = this.state.frame;
@@ -223,6 +230,7 @@ export default class DataHandler extends React.Component {
         const { x } = this.state.x;
         return (
             <div className={"timeline-controls"}>
+                {/*<button onClick={this.getAllPythonData}>All data</button>*/}
                 <div className="progress-bar" onClick={this.getTimeFrame} onMouseLeave={this._onMouseLeave.bind(this)} onMouseMove={this._onMouseMove.bind(this)} ref={(div) => {progressBar = div}}>
                     <div className="progress-indicator" style={{width: `${this.getProgress()}%`}}/>
                     {this.state.mouse_isIntervalSet &&
