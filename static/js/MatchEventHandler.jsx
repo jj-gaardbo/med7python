@@ -103,6 +103,9 @@ export default class MatchEventHandler extends React.Component {
             if(style.left > this.state.width-100){
                 outside = true;
             }
+            if(subs[i][2].min == "45" && subs[i][2].period == "2"){
+                style.left = this.state.meta.start_periods[1]/this.state.dataLength*this.state.width-5
+            }
             DOM.push(<span key={i} className={'event-marker substitution-indicator'} style={style}><i className={"substitution-icon"}></i>
                 <span className={outside ? "event-details nudge" : "event-details"}>
                     <b>Substitution</b> <br/>

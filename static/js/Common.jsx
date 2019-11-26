@@ -177,35 +177,10 @@ export function displayVoronoi(p5, context, voronoi, delaunay, active){
         p5.stroke("#000000");
         context.beginPath();
         voronoi.render(context);
-        voronoi.renderBounds(context);
         context.stroke();
         context.beginPath();
         voronoi.delaunay.renderPoints(context, 4);
         context.fill();
-
-    /*if(this.show_voronoi && delaunay != null){
-            for (let i = 0; i < this.state.players.length; ++i) {
-                //context.save();
-                context.beginPath();
-                voronoi.renderCell(i, context);
-                //context.translate(this.state.points[i][0] - 90, this.state.points[i][1] - 115);
-                if(this.state.players[i].team === HOME){
-                    context.fillStyle = "#0000ff22";
-                } else if(this.state.players[i].team === AWAY){
-                    context.fillStyle = "#ff000022";
-                } else {
-                    context.fillStyle = "#00000066"
-                }
-                context.fill();
-                //context.restore();
-            }
-
-            context.beginPath();
-            voronoi.render(context);
-            context.stroke();
-        }*/
-
-
     }
 }
 

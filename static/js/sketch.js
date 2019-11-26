@@ -78,6 +78,7 @@ export default class P5Sketch extends Component {
         }
 
         this.handleTerminate = this.handleTerminate.bind(this)
+        this.check_substitution = this.check_substitution.bind(this)
     }
 
     componentDidMount = () => {
@@ -114,6 +115,22 @@ export default class P5Sketch extends Component {
         }
     }
 
+    check_substitution(player){
+        let sub_time = {on:0,off:0}
+        for(let i = 0; i < this.state.meta_data.match_events_substitutions.length; i++) {
+            let team = this.get_team_letter(this.state.meta_data.match_events_substitutions[i][2].player_sub_off.team_side);
+            let timestamp = parseInt(this.state.meta_data.match_events_substitutions[i][1])
+            if (parseInt(player.shirt_number) === parseInt(this.state.meta_data.match_events_substitutions[i][2].player_sub_off.shirt_number) && player.team == team){
+                sub_time.off = timestamp;
+                sub_time.on = 0;
+            } else if(parseInt(player.shirt_number) === parseInt(this.state.meta_data.match_events_substitutions[i][2].player_sub_on.shirt_number) && player.team == team){
+                sub_time.on = timestamp;
+                sub_time.off = 0;
+            }
+        }
+        return sub_time
+    }
+
     setupPlayers(players){
         for(let i = 0; i < players.length; i++){
             if(this.validatePlayer(players[i])){
@@ -124,7 +141,8 @@ export default class P5Sketch extends Component {
                     this.setState({away_col: team.color_primary})
                 }
                 let playerDetails = this.getPlayerDetails(players[i].shirt_number, team);
-                this.state.players.push(new Player(players[i].x_pos, players[i].y_pos, players[i].team, players[i].tag_id, players[i].shirt_number, playerDetails, team.color_primary, team.color_secondary, team.name));
+                let sub_timeframe = this.check_substitution(players[i]);
+                this.state.players.push(new Player(players[i].x_pos, players[i].y_pos, players[i].team, players[i].tag_id, players[i].shirt_number, playerDetails, team.color_primary, team.color_secondary, team.name, sub_timeframe));
             }
         }
         this.state.allSet = true;
@@ -155,29 +173,18 @@ export default class P5Sketch extends Component {
         return isValid;
     }
 
-    cleanPlayers(p5){
-        let size = this.state.players.length;
-        for(let i = 0; i < size; i++) {
-            if(typeof this.state.players[i] !== "undefined"){
-                this.state.players[i].checkMovement();
-                if (this.state.players[i].exclude) {
-                    this.state.players.splice(i, 1);
-                    continue;
-                }
-            }
-        }
-    }
-
-    updatePlayers(newFramePlayers, p5, clearTrails = false){
+    updatePlayers(newFramePlayers){
         for(let p = 0; p < newFramePlayers.length; p++){
             let results = this.search(newFramePlayers[p].shirt_number, newFramePlayers[p].tag_id, newFramePlayers[p].team, this.state.players);
             if(results){
+                //this.state.players[results.index].check_sub(this.state.timestamp);
                 this.state.players[results.index].update(newFramePlayers[p], this.state.paused);
             } else {
                 if(this.validatePlayer(newFramePlayers[p])){
                     let team = this.getPlayerTeam(newFramePlayers[p].team);
                     let playerDetails = this.getPlayerDetails(newFramePlayers[p].shirt_number, team);
-                    this.state.players.push(new Player(newFramePlayers[p].x_pos, newFramePlayers[p].y_pos, newFramePlayers[p].team, newFramePlayers[p].tag_id, newFramePlayers[p].shirt_number, playerDetails, team.color_primary, team.color_secondary, team.name));
+                    let sub_timeframe = this.check_substitution(newFramePlayers[p]);
+                    this.state.players.push(new Player(newFramePlayers[p].x_pos, newFramePlayers[p].y_pos, newFramePlayers[p].team, newFramePlayers[p].tag_id, newFramePlayers[p].shirt_number, playerDetails, team.color_primary, team.color_secondary, team.name, sub_timeframe));
                 }
             }
         }
@@ -256,12 +263,11 @@ export default class P5Sketch extends Component {
         voronoi_a.update();
     }
 
-    checkteam(){
-        if(this.h_team.length < 11){
-            return HOME;
-        } else if(this.a_team.length < 11){
-            return AWAY
+    get_team_letter(side){
+        if(side === "Home"){
+            return HOME
         }
+        return AWAY
     }
 
     mouseClicked = (p5) => {
@@ -332,6 +338,26 @@ export default class P5Sketch extends Component {
         }
     };
 
+    check_sub = function(player){
+        if(player.sub_time.on === 0 && player.sub_time.off === 0){return;}
+
+        if(player.sub_time.off !== 0 && this.state.timestamp > player.sub_time.off){
+            player.exclude = true;
+        } else if(player.sub_time.off !== 0 && this.state.timestamp < player.sub_time.off){
+            player.exclude = false
+        } else if(player.sub_time.on !== 0 && this.state.timestamp < player.sub_time.on){
+            player.exclude = true;
+        } else if(player.sub_time.on !== 0 && this.state.timestamp > player.sub_time.on){
+            player.exclude = false
+        }
+    }
+
+    check_substitutions = () => {
+        for(let i = 0; i < this.state.players.length; i++){
+            this.check_sub(this.state.players[i])
+        }
+    }
+
     setup = (p5, canvasParentRef) => {
         let self = this;
         this.canvas = p5.createCanvas(WIDTH, HEIGHT).parent(canvasParentRef);
@@ -359,6 +385,8 @@ export default class P5Sketch extends Component {
         if(!this.state.free_draw){
             p5.clear();
         }
+
+        this.check_substitutions()
 
         this.updatePoints(p5);
 

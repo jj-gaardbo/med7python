@@ -231,7 +231,6 @@ export default class App extends React.Component {
                                                         width={"100%"}
                                                         ref={this.ref}
                                                         url={'./dist/static/'+this.state.currentVideo}
-                                                        onSeek={e => console.log('onSeek', e)}
                                                         playing={!this.state.paused}
                                                         playbackRate={parseFloat(this.state.playbackRate)}
                                                     />

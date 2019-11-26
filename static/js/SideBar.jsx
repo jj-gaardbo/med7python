@@ -187,10 +187,10 @@ export default class SideBar extends React.Component {
                     Spaces (V)
                 </button>
 
-                <button title={"Higlights potential danger zones in the voronoi diagram"} className={"btn btn-block menu "+ (this.state.show_voronoi_danger ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoiDanger }>
+{/*                <button title={"Higlights potential danger zones in the voronoi diagram"} className={"btn btn-block menu "+ (this.state.show_voronoi_danger ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoiDanger }>
                     <i className="fa fa-warning"></i>
                     Highlight danger zones (Z)
-                </button>
+                </button>*/}
 
                 <button title={"Displays a Convex Hull for all players"} className={"btn btn-block menu "+ (this.state.show_convex ? "btn-primary":"btn-secondary")} onClick={ this.toggleConvex }>
                     <i className="fas fa-draw-polygon"></i>

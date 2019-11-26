@@ -172,9 +172,9 @@ class ReactFileDrop extends React.Component {
                     </p>
 
                     <progress className={"upload-progress hidden"}></progress>
-                    {!this.state.files_recieved &&
+                    {/*{!this.state.files_recieved &&
                     <button className={"freehand btn btn-primary"} onClick={this.props.freehandSketch}><i className="fa fa-edit"></i>Free hand</button>
-                    }
+                    }*/}
                     {this.state.data_processed === false &&
                         <div>
                             <h2>Please wait</h2>

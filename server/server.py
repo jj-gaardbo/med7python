@@ -591,6 +591,14 @@ class TeamData:
     def set_match_players(self, match_player_array):
         self.match_players = match_player_array
 
+    def check_subs(self, ref):
+        subs = self.get_team_substitutions()
+        for i in range(len(subs)):
+            if ref == subs[i].sub_off:
+                return [subs[i].min, subs[i].sec]
+        return []
+
+
     def set_substitutions(self, substitution_array):
         self.substitutions = substitution_array
 
@@ -718,7 +726,7 @@ class Team:
 
 
 class Player_Detail:
-    def __init__(self, first_name, last_name, known_name, shirt_number, player_reference, position, sub_position, formation_place, status, team_name, team_side):
+    def __init__(self, first_name, last_name, known_name, shirt_number, player_reference, position, sub_position, formation_place, status, team_name, team_side, sub_time):
         self.first_name = first_name
         self.last_name = last_name
         self.known_name = known_name
@@ -730,6 +738,7 @@ class Player_Detail:
         self.status = status
         self.team_name = team_name
         self.team_side = team_side
+        self.sub_time = sub_time
 
 
 def handle_event_data(filepath, filename):
@@ -794,7 +803,8 @@ def handle_event_data(filepath, filename):
                         known_name = names.text
 
                 line_up_player = temp.get_match_player(player.get('uID'))
-                player_detail_obj = Player_Detail(first_name, last_name, known_name, line_up_player.shirt_number, player.get('uID'), player.get('Position'), line_up_player.sub_position, line_up_player.formation_place, line_up_player.status, team.name, team.side)
+                sub_time = temp.check_subs(line_up_player.player_ref)
+                player_detail_obj = Player_Detail(first_name, last_name, known_name, line_up_player.shirt_number, player.get('uID'), player.get('Position'), line_up_player.sub_position, line_up_player.formation_place, line_up_player.status, team.name, team.side, sub_time)
                 team.add_player(player_detail_obj)
 
         team.assign_players()

@@ -9,7 +9,7 @@ function allEqual(arr) {
 }
 
 export default class Player {
-    constructor(x, y, team, id, shirt, teamDetails, color1, color2, teamName){
+    constructor(x, y, team, id, shirt, teamDetails, color1, color2, teamName, sub_timeframe){
         let coords = scaleCoords(x, y);
         this.x = coords[0];
         this.y = coords[1];
@@ -26,17 +26,18 @@ export default class Player {
         this.has_ball = false;
         this.edited = false;
         this.trail = [];
-        this.recentMovement = [];
         this.exclude = false;
         this.firstname = "";
         this.lastname = "";
         this.knownname = "";
         this.ref = "";
         this.position = "";
-        this.sub_pos = "ss";
+        this.sub_pos = "";
         this.status = "";
         this.color1 = "";
         this.color2 = "";
+        this.sub_time = sub_timeframe;
+
         if(typeof teamDetails !== "undefined" && teamDetails !== ""){
             this.firstname = teamDetails.first_name;
             this.lastname = teamDetails.last_name;
@@ -51,12 +52,6 @@ export default class Player {
         if(color2 !== null){this.color2 = color2}
 
         if(teamName !== ""){this.team_name = teamName}
-    }
-
-    checkMovement = function(){
-        if(this.recentMovement.length >= 20 && allEqual(this.recentMovement)){
-            this.exclude = true;
-        }
     }
 
     check_possession = function(ballX, ballY, ballZ){
@@ -81,7 +76,7 @@ export default class Player {
         }
 
         if(trails && !this.edited){
-            for(let i = 0; i < this.trail.length; i++){
+            for(let i = 0; i < this.trail.length; i+2){
                 p5.ellipse(this.trail[i].x, this.trail[i].y, i, i);
             }
         }
@@ -116,7 +111,7 @@ export default class Player {
         p5.fill(0);
         p5.text(this.shirtNum, this.x-6, this.y+5);
 
-        if(this.is_highlighted && !dist){
+        if(this.is_hovered && !dist){
             p5.textAlign(p5.CENTER);
             p5.text(this.firstname + " " + this.lastname, this.x-6, this.y+25);
             p5.text(this.position, this.x-6, this.y+45);
@@ -162,19 +157,16 @@ export default class Player {
         }
     };
 
-    update = function(data, paused, p5){
+    update = function(data, paused){
         let coords = scaleCoords(data.x_pos, data.y_pos);
         this.x = coords[0];
         this.y = coords[1];
+        if(this.exclude){
+            this.x = -20
+            this.y = -20
+        }
         this.id = data.tag_id;
         this.team = data.team;
         this.shirtNum = data.shirt_number;
- 
-        if(!paused){
-            this.recentMovement.push(""+Math.floor(this.x)+" "+Math.floor(this.y));
-            if(this.recentMovement.length >= 25){
-                this.recentMovement.shift();
-            }
-        }
     }
 }
