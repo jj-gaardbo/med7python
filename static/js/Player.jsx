@@ -76,7 +76,7 @@ export default class Player {
         }
 
         if(trails && !this.edited){
-            for(let i = 0; i < this.trail.length; i+2){
+            for(let i = 0; i < this.trail.length; i++){
                 p5.ellipse(this.trail[i].x, this.trail[i].y, i, i);
             }
         }

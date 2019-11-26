@@ -177,7 +177,7 @@ export default class SideBar extends React.Component {
 
                 <button title={"Enables a measuring tool between chosen players"} className={"btn btn-block menu "+ (this.state.show_dist ? "btn-primary":"btn-secondary")} onClick={ this.toggleDist }>
                     <i className="fas fa-ruler"></i>
-                    Distances
+                    Distances (D) (Pause to use)
                 </button>
 
                 <hr/>
@@ -187,6 +187,7 @@ export default class SideBar extends React.Component {
                     Spaces (V)
                 </button>
 
+                <hr/>
 {/*                <button title={"Higlights potential danger zones in the voronoi diagram"} className={"btn btn-block menu "+ (this.state.show_voronoi_danger ? "btn-primary":"btn-secondary")} onClick={ this.toggleVoronoiDanger }>
                     <i className="fa fa-warning"></i>
                     Highlight danger zones (Z)
@@ -207,11 +208,9 @@ export default class SideBar extends React.Component {
                     (Away) Shape (A)
                 </button>
 
-                {this.state.show_convexA || this.state.show_convexH &&
-                <button title={"Excludes the keeper from the teams Convex Hull"} className={"btn btn-block menu "+ (this.state.show_convex_exclude_keeper ? "btn-primary":"btn-info")} onClick={ this.toggleExcludeKeeper }>
+                <button title={"Excludes the keeper from the teams Convex Hull"} className={"btn btn-block menu "+ (this.state.show_convex_exclude_keeper ? "btn-warning":"btn-info")} onClick={ this.toggleExcludeKeeper }>
                     Exclude keeper (X)
                 </button>
-                }
 
                 <hr/>
 
@@ -224,7 +223,7 @@ export default class SideBar extends React.Component {
 
                 <button title={"Enables free drawing mode on the pitch"} className={"btn btn-block menu "+ (this.state.free_draw ? "btn-primary":"btn-secondary")} onClick={ this.toggleDraw }>
                     <i className="fas fa-pencil-alt"></i>
-                    Draw (Q)
+                    Draw (Q) (Pause to use)
                 </button>
 
                 <hr/>
